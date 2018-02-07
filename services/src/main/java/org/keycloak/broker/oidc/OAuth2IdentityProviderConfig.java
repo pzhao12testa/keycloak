@@ -74,16 +74,4 @@ public class OAuth2IdentityProviderConfig extends IdentityProviderModel {
     public void setDefaultScope(String defaultScope) {
         getConfig().put("defaultScope", defaultScope);
     }
-
-    public boolean isLoginHint() {
-        return Boolean.valueOf(getConfig().get("loginHint"));
-    }
-
-    public void setLoginHint(boolean loginHint) {
-        getConfig().put("loginHint", String.valueOf(loginHint));
-    }
-
-    public String getPrompt() {
-        return getConfig().get("prompt");
-    }
 }

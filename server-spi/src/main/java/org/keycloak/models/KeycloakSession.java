@@ -20,7 +20,6 @@ package org.keycloak.models;
 import org.keycloak.component.ComponentModel;
 import org.keycloak.models.cache.UserCache;
 import org.keycloak.provider.Provider;
-import org.keycloak.sessions.AuthenticationSessionProvider;
 import org.keycloak.storage.federated.UserFederatedStorageProvider;
 
 import java.util.Set;
@@ -103,9 +102,6 @@ public interface KeycloakSession {
     UserSessionProvider sessions();
 
 
-    AuthenticationSessionProvider authenticationSessions();
-
-
 
     void close();
 
@@ -123,8 +119,6 @@ public interface KeycloakSession {
      */
     UserProvider users();
 
-
-    ClientProvider clientStorageManager();
 
     /**
      * Un-cached view of all users in system including users loaded by UserStorageProviders
@@ -147,15 +141,6 @@ public interface KeycloakSession {
      */
     UserProvider userLocalStorage();
 
-    RealmProvider realmLocalStorage();
-
-    /**
-     * Keycloak specific local storage for clients.  No cache in front, this api talks directly to database configured for Keycloak
-     *
-     * @return
-     */
-    ClientProvider clientLocalStorage();
-
     /**
      * Hybrid storage for UserStorageProviders that can't store a specific piece of keycloak data in their external storage.
      * No cache in front.
@@ -170,12 +155,5 @@ public interface KeycloakSession {
       * @return
      */
     KeyManager keys();
-
-    /**
-     * Theme manager
-     *
-     * @return
-     */
-    ThemeManager theme();
 
 }

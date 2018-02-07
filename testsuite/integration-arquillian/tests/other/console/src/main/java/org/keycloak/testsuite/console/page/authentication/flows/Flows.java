@@ -5,15 +5,9 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.ui.Select;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.keycloak.testsuite.util.UIUtils.performOperationWithPageReload;
-
 /**
  * @author tkyjovsk
  * @author mhajas
- * @author pzaoral
  */
 public class Flows extends Authentication {
 
@@ -25,19 +19,19 @@ public class Flows extends Authentication {
     @FindBy(tagName = "select")
     private Select flowSelect;
 
-    @FindBy(xpath = ".//button[@data-ng-click='createFlow()']")
+    @FindBy(xpath = "//button[text() = 'New']")
     private WebElement newButton;
 
-    @FindBy(xpath = ".//button[@data-ng-click='copyFlow()']")
+    @FindBy(xpath = "//button[text() = 'Copy']")
     private WebElement copyButton;
 
-    @FindBy(xpath = ".//button[@data-ng-click='deleteFlow()']")
+    @FindBy(xpath = "//button[text() = 'Delete']")
     private WebElement deleteButton;
 
-    @FindBy(xpath = ".//button[@data-ng-click='addExecution()']")
+    @FindBy(xpath = "//button[text() = 'Add Execution']")
     private WebElement addExecutionButton;
 
-    @FindBy(xpath = ".//button[@data-ng-click='addFlow()']")
+    @FindBy(xpath = "//button[text() = 'Add Flow']")
     private WebElement addFlowButton;
 
     @FindBy(tagName = "table")
@@ -45,10 +39,10 @@ public class Flows extends Authentication {
 
     public enum FlowOption {
 
-        DIRECT_GRANT("Direct Grant"),
+        DIRECT_GRANT("Direct grant"), 
         REGISTRATION("Registration"), 
         BROWSER("Browser"),
-        RESET_CREDENTIALS("Reset Credentials"),
+        RESET_CREDENTIALS("Reset credentials"), 
         CLIENTS("Clients");
 
         private final String name;
@@ -63,15 +57,11 @@ public class Flows extends Authentication {
     }
 
     public void selectFlowOption(FlowOption option) {
-        performOperationWithPageReload(() -> flowSelect.selectByVisibleText(option.getName()));
+        flowSelect.selectByVisibleText(option.getName());
     }
 
     public String getFlowSelectValue() {
         return flowSelect.getFirstSelectedOption().getText();
-    }
-
-    public List<String> getFlowAllValues() {
-        return flowSelect.getOptions().stream().map(WebElement::getText).collect(Collectors.toList());
     }
 
     public FlowsTable table() {

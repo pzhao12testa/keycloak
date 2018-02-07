@@ -22,7 +22,7 @@ import org.openqa.selenium.support.FindBy;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public class LoginPasswordUpdatePage extends LanguageComboboxAwarePage {
+public class LoginPasswordUpdatePage extends AbstractPage {
 
     @FindBy(id = "password-new")
     private WebElement newPasswordInput;
@@ -35,9 +35,6 @@ public class LoginPasswordUpdatePage extends LanguageComboboxAwarePage {
 
     @FindBy(className = "alert-error")
     private WebElement loginErrorMessage;
-
-    @FindBy(xpath = "//span[@class='kc-feedback-text']")
-    private WebElement feedbackMessage;
 
     public void changePassword(String newPassword, String passwordConfirm) {
         newPasswordInput.sendKeys(newPassword);
@@ -58,7 +55,4 @@ public class LoginPasswordUpdatePage extends LanguageComboboxAwarePage {
         return loginErrorMessage != null ? loginErrorMessage.getText() : null;
     }
 
-    public String getFeedbackMessage() {
-        return feedbackMessage.getText();
-    }
 }

@@ -19,6 +19,7 @@ package org.keycloak.testsuite.adapter.servlet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
@@ -99,6 +100,8 @@ public abstract class AbstractOIDCPublicKeyRotationAdapterTest extends AbstractS
     }
 
 
+
+
     @Before
     public void beforeRotationAdapterTest() {
         // Delete all cookies from token-min-ttl page to be sure we are logged out
@@ -127,7 +130,7 @@ public abstract class AbstractOIDCPublicKeyRotationAdapterTest extends AbstractS
         testRealmLoginPage.form().waitForUsernameInputPresent();
         assertCurrentUrlStartsWithLoginUrlOf(testRealmPage);
         testRealmLoginPage.form().login("bburke@redhat.com", "password");
-        URLAssert.assertCurrentUrlStartsWith(tokenMinTTLPage.getInjectedUrl().toString());
+        URLAssert.assertCurrentUrlStartsWith(driver, tokenMinTTLPage.getInjectedUrl().toString());
         Assert.assertNull(tokenMinTTLPage.getAccessToken());
 
         driver.navigate().to(logoutUri);

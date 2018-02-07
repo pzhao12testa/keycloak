@@ -35,8 +35,6 @@ import java.util.Map;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
- * @author <a href="mailto:brad.culley@spartasystems.com">Brad Culley</a>
- * @author <a href="mailto:john.ament@spartasystems.com">John D. Ament</a>
  * @version $Revision: 1 $
  */
 public class KeycloakDeployment {
@@ -68,7 +66,6 @@ public class KeycloakDeployment {
 
     protected String scope;
     protected SslRequired sslRequired = SslRequired.ALL;
-    protected int confidentialPort = -1;
     protected TokenStore tokenStore = TokenStore.SESSION;
     protected String stateCookieName = "OAuth_Token_Request_State";
     protected boolean useResourceRoleMappings;
@@ -76,7 +73,6 @@ public class KeycloakDeployment {
     protected int corsMaxAge = -1;
     protected String corsAllowedHeaders;
     protected String corsAllowedMethods;
-    protected String corsExposedHeaders;
     protected boolean exposeToken;
     protected boolean alwaysRefreshToken;
     protected boolean registerNodeAtStartup;
@@ -88,14 +84,6 @@ public class KeycloakDeployment {
     protected int minTimeBetweenJwksRequests;
     protected int publicKeyCacheTtl;
     private PolicyEnforcer policyEnforcer;
-
-    // https://tools.ietf.org/html/rfc7636
-    protected boolean pkce = false;
-    protected boolean ignoreOAuthQueryParameter;
-    
-    protected Map<String, String> redirectRewriteRules;
-
-    protected boolean delegateBearerErrorResponseSending = false;
 
     public KeycloakDeployment() {
     }
@@ -153,8 +141,6 @@ public class KeycloakDeployment {
         if (log.isDebugEnabled()) {
             log.debug("resolveUrls");
         }
-
-        authServerBaseUrl = authUrlBuilder.build().toString();
 
         String login = authUrlBuilder.clone().path(ServiceUrlConstants.AUTH_PATH).build(getRealm()).toString();
         authUrl = KeycloakUriBuilder.fromUri(login);
@@ -280,14 +266,6 @@ public class KeycloakDeployment {
         this.sslRequired = sslRequired;
     }
 
-    public int getConfidentialPort() {
-        return confidentialPort;
-    }
-
-    public void setConfidentialPort(int confidentialPort) {
-        this.confidentialPort = confidentialPort;
-    }
-
     public TokenStore getTokenStore() {
         return tokenStore;
     }
@@ -342,14 +320,6 @@ public class KeycloakDeployment {
 
     public void setCorsAllowedMethods(String corsAllowedMethods) {
         this.corsAllowedMethods = corsAllowedMethods;
-    }
-
-    public String getCorsExposedHeaders() {
-        return corsExposedHeaders;
-    }
-
-    public void setCorsExposedHeaders(String corsExposedHeaders) {
-        this.corsExposedHeaders = corsExposedHeaders;
     }
 
     public boolean isExposeToken() {
@@ -443,38 +413,5 @@ public class KeycloakDeployment {
 
     public PolicyEnforcer getPolicyEnforcer() {
         return policyEnforcer;
-    }
-
-    // https://tools.ietf.org/html/rfc7636
-    public boolean isPkce() {
-        return pkce;
-    }
-
-    public void setPkce(boolean pkce) {
-        this.pkce = pkce;
-    }
-
-    public void setIgnoreOAuthQueryParameter(boolean ignoreOAuthQueryParameter) {
-        this.ignoreOAuthQueryParameter = ignoreOAuthQueryParameter;
-    }
-
-    public boolean isOAuthQueryParameterEnabled() {
-        return !this.ignoreOAuthQueryParameter;
-    }
-
-    public Map<String, String> getRedirectRewriteRules() {
-        return redirectRewriteRules;
-    }
-
-    public void setRewriteRedirectRules(Map<String, String> redirectRewriteRules) {
-        this.redirectRewriteRules = redirectRewriteRules;
-    }
-
-    public boolean isDelegateBearerErrorResponseSending() {
-        return delegateBearerErrorResponseSending;
-    }
-
-    public void setDelegateBearerErrorResponseSending(boolean delegateBearerErrorResponseSending) {
-        this.delegateBearerErrorResponseSending = delegateBearerErrorResponseSending;
     }
 }

@@ -18,7 +18,7 @@ package org.keycloak.models.cache;
 
 import org.keycloak.models.UserModel;
 
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Cached users will implement this interface
@@ -55,5 +55,5 @@ public interface CachedUserModel extends UserModel {
      *
      * @return
      */
-    ConcurrentMap getCachedWith();
+    ConcurrentHashMap getCachedWith();
 }

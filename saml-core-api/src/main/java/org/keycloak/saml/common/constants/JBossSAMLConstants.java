@@ -23,7 +23,7 @@ package org.keycloak.saml.common.constants;
  * @since Dec 10, 2008
  */
 public enum JBossSAMLConstants {
-    ADDRESS("Address"), ADVICE("Advice"), ADDITIONAL_METADATA_LOCATION("AdditionalMetadataLocation"), AFFILIATION_DESCRIPTOR(
+    ADDRESS("Address"), ADDITIONAL_METADATA_LOCATION("AdditionalMetadataLocation"), AFFILIATION_DESCRIPTOR(
             "AffiliationDescriptor"), ALLOW_CREATE("AllowCreate"), ARTIFACT("Artifact"), ARTIFACT_RESOLVE("ArtifactResolve"), ARTIFACT_RESPONSE(
             "ArtifactResponse"), ARTIFACT_RESOLUTION_SERVICE("ArtifactResolutionService"), ASSERTION("Assertion"), ASSERTION_CONSUMER_SERVICE(
             "AssertionConsumerService"), ASSERTION_CONSUMER_SERVICE_URL("AssertionConsumerServiceURL"), ASSERTION_CONSUMER_SERVICE_INDEX(
@@ -52,7 +52,7 @@ public enum JBossSAMLConstants {
             "OrganizationUrl"), PDP_DESCRIPTOR("PDPDescriptor"), PROTOCOL_BINDING("ProtocolBinding"), PROTOCOL_SUPPORT_ENUMERATION(
             "protocolSupportEnumeration"), PROVIDER_NAME("ProviderName"), REQUESTED_AUTHN_CONTEXT("RequestedAuthnContext"), REASON(
             "Reason"), RECIPIENT("Recipient"), REQUEST("Request"), REQUESTED_ATTRIBUTE("RequestedAttribute"), REQUEST_ABSTRACT(
-            "RequestAbstract"), RESPONSE("Response"), RESPONSE_LOCATION("ResponseLocation"), RETURN_CONTEXT("ReturnContext"), SCOPING("Scoping"), SESSION_INDEX(
+            "RequestAbstract"), RESPONSE("Response"), RESPONSE_LOCATION("ResponseLocation"), RETURN_CONTEXT("ReturnContext"), SESSION_INDEX(
             "SessionIndex"), SERVICE_NAME("ServiceName"), SERVICE_DESCRIPTION("ServiceDescription"), SP_PROVIDED_ID(
             "SPProvidedID"), SP_NAME_QUALIFIER("SPNameQualifier"), SP_SSO_DESCRIPTOR("SPSSODescriptor"), SIGNATURE("Signature"), SIGNATURE_SHA1_WITH_DSA(
             "http://www.w3.org/2000/09/xmldsig#dsa-sha1"), SIGNATURE_SHA1_WITH_RSA("http://www.w3.org/2000/09/xmldsig#rsa-sha1"), SINGLE_SIGNON_SERVICE(

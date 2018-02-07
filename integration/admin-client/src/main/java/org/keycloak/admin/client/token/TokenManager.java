@@ -92,7 +92,7 @@ public class TokenManager {
         return currentToken;
     }
 
-    public synchronized AccessTokenResponse refreshToken() {
+    public AccessTokenResponse refreshToken() {
         Form form = new Form().param(GRANT_TYPE, REFRESH_TOKEN)
                               .param(REFRESH_TOKEN, currentToken.getRefreshToken());
 
@@ -103,8 +103,10 @@ public class TokenManager {
         try {
             int requestTime = Time.currentTime();
 
-            currentToken = tokenService.refreshToken(config.getRealm(), form.asMap());
-            expirationTime = requestTime + currentToken.getExpiresIn();
+            synchronized (this) {
+                currentToken = tokenService.refreshToken(config.getRealm(), form.asMap());
+                expirationTime = requestTime + currentToken.getExpiresIn();
+            }
             return currentToken;
         } catch (BadRequestException e) {
             return grantToken();
@@ -124,7 +126,7 @@ public class TokenManager {
      *
      * @param token the token to invalidate (cannot be null).
      */
-    public synchronized void invalidate(String token) {
+    public void invalidate(String token) {
         if (currentToken == null) {
             return; // There's nothing to invalidate.
         }

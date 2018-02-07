@@ -27,6 +27,7 @@ public class PortLdapUserFedToComponentModel extends AbstractUserFedToComponent 
 
     @Override
     protected void generateStatementsImpl() throws CustomChangeException {
+        String providerId = LDAPConstants.LDAP_PROVIDER;
         convertFedProviderToComponent(LDAPConstants.LDAP_PROVIDER, "org.keycloak.storage.ldap.mappers.LDAPStorageMapper");
     }
 

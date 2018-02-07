@@ -27,7 +27,6 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -42,14 +41,14 @@ public class IdentityProviderBean {
     private RealmModel realm;
     private final KeycloakSession session;
 
-    public IdentityProviderBean(RealmModel realm, KeycloakSession session, List<IdentityProviderModel> identityProviders, URI baseURI) {
+    public IdentityProviderBean(RealmModel realm, KeycloakSession session, List<IdentityProviderModel> identityProviders, URI baseURI, UriInfo uriInfo) {
         this.realm = realm;
         this.session = session;
 
         if (!identityProviders.isEmpty()) {
             Set<IdentityProvider> orderedSet = new TreeSet<>(IdentityProviderComparator.INSTANCE);
             for (IdentityProviderModel identityProvider : identityProviders) {
-                if (identityProvider.isEnabled() && !identityProvider.isLinkOnly()) {
+                if (identityProvider.isEnabled()) {
                     addIdentityProvider(orderedSet, realm, baseURI, identityProvider);
                 }
             }
@@ -64,13 +63,10 @@ public class IdentityProviderBean {
     private void addIdentityProvider(Set<IdentityProvider> orderedSet, RealmModel realm, URI baseURI, IdentityProviderModel identityProvider) {
         String loginUrl = Urls.identityProviderAuthnRequest(baseURI, identityProvider.getAlias(), realm.getName()).toString();
         String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, identityProvider);
-        Map<String, String> config = identityProvider.getConfig();
-        boolean hideOnLoginPage = config != null && Boolean.parseBoolean(config.get("hideOnLoginPage"));
-        if (!hideOnLoginPage) {
-            orderedSet.add(new IdentityProvider(identityProvider.getAlias(),
-                    displayName, identityProvider.getProviderId(), loginUrl,
-                    config != null ? config.get("guiOrder") : null));
-        }
+
+        orderedSet.add(new IdentityProvider(identityProvider.getAlias(),
+                displayName, identityProvider.getProviderId(), loginUrl,
+                identityProvider.getConfig() != null ? identityProvider.getConfig().get("guiOrder") : null));
     }
 
     public List<IdentityProvider> getProviders() {

@@ -27,6 +27,8 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
@@ -35,6 +37,11 @@ import javax.persistence.Table;
  */
 @Table(name="AUTHENTICATION_EXECUTION")
 @Entity
+@NamedQueries({
+        @NamedQuery(name="getAuthenticationExecutionsByFlow", query="select authenticator from AuthenticationExecutionEntity authenticator where authenticator.realm = :realm and authenticator.parentFlow = :parentFlow"),
+        @NamedQuery(name="deleteAuthenticationExecutionsByRealm", query="delete from AuthenticationExecutionEntity authenticator where authenticator.realm = :realm"),
+        @NamedQuery(name="deleteAuthenticationExecutionsByRealmAndFlow", query="delete from AuthenticationExecutionEntity authenticator where authenticator.realm = :realm and authenticator.parentFlow = :parentFlow"),
+})
 public class AuthenticationExecutionEntity {
     @Id
     @Column(name="ID", length = 36)

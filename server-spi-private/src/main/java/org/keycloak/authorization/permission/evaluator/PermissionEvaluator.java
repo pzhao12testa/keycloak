@@ -17,10 +17,7 @@
  */
 package org.keycloak.authorization.permission.evaluator;
 
-import java.util.List;
-
 import org.keycloak.authorization.Decision;
-import org.keycloak.authorization.policy.evaluation.Result;
 
 /**
  * An {@link PermissionEvaluator} represents a source of {@link org.keycloak.authorization.permission.ResourcePermission}, responsible for emitting these permissions
@@ -31,5 +28,4 @@ import org.keycloak.authorization.policy.evaluation.Result;
 public interface PermissionEvaluator {
 
     void evaluate(Decision decision);
-    List<Result> evaluate();
 }

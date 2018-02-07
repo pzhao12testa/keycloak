@@ -17,23 +17,18 @@
 
 package org.keycloak.testsuite.federation.kerberos;
 
-import java.net.URI;
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.keycloak.common.constants.KerberosConstants;
-import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.common.util.MultivaluedHashMap;
 import org.keycloak.federation.kerberos.CommonKerberosConfig;
 import org.keycloak.federation.kerberos.KerberosConfig;
@@ -43,7 +38,6 @@ import org.keycloak.representations.idm.ComponentRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
-import org.keycloak.testsuite.ActionURIUtils;
 import org.keycloak.testsuite.util.KerberosRule;
 
 /**
@@ -84,11 +78,6 @@ public class KerberosStandaloneTest extends AbstractKerberosTest {
     protected boolean isCaseSensitiveLogin() {
         return kerberosRule.isCaseSensitiveLogin();
     }
-    
-    @Override
-    protected boolean isStartEmbeddedLdapServer() {
-        return kerberosRule.isStartEmbeddedLdapServer();
-    }
 
 
     @Override
@@ -101,7 +90,7 @@ public class KerberosStandaloneTest extends AbstractKerberosTest {
         spnegoLoginTestImpl();
 
         // Assert user was imported and hasn't any required action on him. Profile info is synced from LDAP
-        assertUser("hnelson", "hnelson@" + kerberosRule.getConfig().get(KerberosConstants.KERBEROS_REALM).toLowerCase(), null, null, false);
+        assertUser("hnelson", "hnelson@keycloak.org", null, null, false);
     }
 
 
@@ -119,11 +108,11 @@ public class KerberosStandaloneTest extends AbstractKerberosTest {
         Assert.assertEquals(200, spnegoResponse.getStatus());
         String responseText = spnegoResponse.readEntity(String.class);
         Assert.assertTrue(responseText.contains("You need to update your user profile to activate your account."));
-        Assert.assertTrue(responseText.contains("hnelson@" + kerberosRule.getConfig().get(KerberosConstants.KERBEROS_REALM).toLowerCase()));
+        Assert.assertTrue(responseText.contains("hnelson@keycloak.org"));
         spnegoResponse.close();
 
         // Assert user was imported and has required action on him
-        assertUser("hnelson", "hnelson@" + kerberosRule.getConfig().get(KerberosConstants.KERBEROS_REALM).toLowerCase(), null, null, true);
+        assertUser("hnelson", "hnelson@keycloak.org", null, null, true);
 
         // Switch updateProfileOnFirstLogin to off
         kerberosProvider.getConfig().putSingle(KerberosConstants.UPDATE_PROFILE_FIRST_LOGIN, "false");
@@ -154,21 +143,15 @@ public class KerberosStandaloneTest extends AbstractKerberosTest {
         Response spnegoResponse = spnegoLogin("hnelson", "secret");
         String context = spnegoResponse.readEntity(String.class);
         spnegoResponse.close();
-
-        Assert.assertTrue(context.contains("Log in to test"));
-
-        String url = ActionURIUtils.getActionURIFromPageSource(context);
-
-
-        // Follow login with HttpClient. Improve if needed
-        MultivaluedMap<String, String> params = new javax.ws.rs.core.MultivaluedHashMap<>();
-        params.putSingle("username", "test-user@localhost");
-        params.putSingle("password", "password");
-        Response response = client.target(url).request()
-                .post(Entity.form(params));
-
-        URI redirectUri = response.getLocation();
-        assertAuthenticationSuccess(redirectUri.toString());
+        Pattern pattern = Pattern.compile("action=\"([^\"]+)\"");
+        Matcher m = pattern.matcher(context);
+        Assert.assertTrue(m.find());
+        String url = m.group(1);
+        driver.navigate().to(url);
+        Assert.assertTrue(loginPage.isCurrent());
+        loginPage.login("test-user@localhost", "password");
+        String pageSource = driver.getPageSource();
+        assertAuthenticationSuccess(driver.getCurrentUrl());
 
         events.clear();
         testRealmResource().components().add(kerberosProvider);

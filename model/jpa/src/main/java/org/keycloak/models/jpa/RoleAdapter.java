@@ -26,6 +26,7 @@ import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -100,12 +101,16 @@ public class RoleAdapter implements RoleModel, JpaModel<RoleEntity> {
             if (composite.equals(entity)) return;
         }
         getEntity().getCompositeRoles().add(entity);
+        em.flush();
     }
 
     @Override
     public void removeCompositeRole(RoleModel role) {
         RoleEntity entity = RoleAdapter.toRoleEntity(role, em);
-        getEntity().getCompositeRoles().remove(entity);
+        Iterator<RoleEntity> it = getEntity().getCompositeRoles().iterator();
+        while (it.hasNext()) {
+            if (it.next().equals(entity)) it.remove();
+        }
     }
 
     @Override

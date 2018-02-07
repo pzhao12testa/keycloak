@@ -18,9 +18,7 @@
 package org.keycloak.testsuite.util;
 
 import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -93,11 +91,6 @@ public class ClientBuilder {
         return this;
     }
 
-    public ClientBuilder frontchannelLogout(Boolean frontchannelLogout) {
-        rep.setFrontchannelLogout(frontchannelLogout);
-        return this;
-    }
-
     public ClientBuilder secret(String secret) {
         rep.setSecret(secret);
         return this;
@@ -113,21 +106,9 @@ public class ClientBuilder {
     }
 
     public ClientBuilder attribute(String name, String value) {
-        Map<String, String> attributes = rep.getAttributes();
-        if (attributes == null) {
-            attributes = new HashMap<>();
-        }
+        Map<String, String> attributes = new HashMap<String, String>();
         attributes.put(name, value);
         rep.setAttributes(attributes);
-        return this;
-    }
-
-    public ClientBuilder removeAttribute(String name) {
-        Map<String, String> attributes = rep.getAttributes();
-        if (attributes != null) {
-            attributes.remove(name);
-            rep.setAttributes(attributes);
-        }
         return this;
     }
 
@@ -173,29 +154,6 @@ public class ClientBuilder {
 
     public ClientBuilder rootUrl(String rootUrl) {
         rep.setRootUrl(rootUrl);
-        return this;
-    }
-
-    public ClientBuilder protocol(String protocol) {
-        rep.setProtocol(protocol);
-        return this;
-    }
-
-    public ClientBuilder enabled(Boolean enabled) {
-        rep.setEnabled(enabled);
-        return this;
-    }
-
-    public ClientBuilder authorizationServicesEnabled(boolean enable) {
-        rep.setAuthorizationServicesEnabled(enable);
-        return this;
-    }
-
-    public ClientBuilder protocolMapper(ProtocolMapperRepresentation... mappers) {
-        if (rep.getProtocolMappers() == null) {
-            rep.setProtocolMappers(new ArrayList<>());
-        }
-        rep.getProtocolMappers().addAll(Arrays.asList(mappers));
         return this;
     }
 }

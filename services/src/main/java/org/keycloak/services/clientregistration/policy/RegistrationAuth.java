@@ -17,6 +17,8 @@
 
 package org.keycloak.services.clientregistration.policy;
 
+import org.keycloak.services.clientregistration.RegistrationAccessToken;
+
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
  */

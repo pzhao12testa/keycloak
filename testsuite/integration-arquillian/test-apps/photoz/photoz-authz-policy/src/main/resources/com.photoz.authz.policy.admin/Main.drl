@@ -7,7 +7,7 @@ rule "Authorize Admin Resources"
         when
            $evaluation : Evaluation(
                $identity : context.identity,
-               $identity.hasRealmRole("admin")
+               $identity.hasRole("admin")
            )
         then
            $evaluation.grant();

@@ -63,50 +63,46 @@ public class RequiredActionMultipleActionsTest extends AbstractTestRealmKeycloak
         loginPage.open();
         loginPage.login("test-user@localhost", "password");
 
-        String codeId = null;
+        String sessionId = null;
         if (changePasswordPage.isCurrent()) {
-            codeId = updatePassword(codeId);
+            sessionId = updatePassword(sessionId);
 
             updateProfilePage.assertCurrent();
-            updateProfile(codeId);
+            updateProfile(sessionId);
         } else if (updateProfilePage.isCurrent()) {
-            codeId = updateProfile(codeId);
+            sessionId = updateProfile(sessionId);
 
             changePasswordPage.assertCurrent();
-            updatePassword(codeId);
+            updatePassword(sessionId);
         } else {
             Assert.fail("Expected to update password and profile before login");
         }
 
         Assert.assertEquals(RequestType.AUTH_RESPONSE, appPage.getRequestType());
 
-        events.expectLogin().session(codeId).assertEvent();
+        events.expectLogin().session(sessionId).assertEvent();
     }
 
-    public String updatePassword(String codeId) {
+    public String updatePassword(String sessionId) {
         changePasswordPage.changePassword("new-password", "new-password");
 
         AssertEvents.ExpectedEvent expectedEvent = events.expectRequiredAction(EventType.UPDATE_PASSWORD);
-        if (codeId != null) {
-            expectedEvent.detail(Details.CODE_ID, codeId);
+        if (sessionId != null) {
+            expectedEvent.session(sessionId);
         }
-        return expectedEvent.assertEvent().getDetails().get(Details.CODE_ID);
+        return expectedEvent.assertEvent().getSessionId();
     }
 
-    public String updateProfile(String codeId) {
+    public String updateProfile(String sessionId) {
         updateProfilePage.update("New first", "New last", "new@email.com", "test-user@localhost");
 
-        AssertEvents.ExpectedEvent expectedEvent = events.expectRequiredAction(EventType.UPDATE_EMAIL)
-                .detail(Details.PREVIOUS_EMAIL, "test-user@localhost")
-                .detail(Details.UPDATED_EMAIL, "new@email.com");
-        if (codeId != null) {
-            expectedEvent.detail(Details.CODE_ID, codeId);
+        AssertEvents.ExpectedEvent expectedEvent = events.expectRequiredAction(EventType.UPDATE_EMAIL).detail(Details.PREVIOUS_EMAIL, "test-user@localhost").detail(Details.UPDATED_EMAIL, "new@email.com");
+        if (sessionId != null) {
+            expectedEvent.session(sessionId);
         }
-        codeId = expectedEvent.assertEvent().getDetails().get(Details.CODE_ID);
-        events.expectRequiredAction(EventType.UPDATE_PROFILE)
-                .detail(Details.CODE_ID, codeId)
-                .assertEvent();
-        return codeId;
+        sessionId = expectedEvent.assertEvent().getSessionId();
+        events.expectRequiredAction(EventType.UPDATE_PROFILE).session(sessionId).assertEvent();
+        return sessionId;
     }
 
 }

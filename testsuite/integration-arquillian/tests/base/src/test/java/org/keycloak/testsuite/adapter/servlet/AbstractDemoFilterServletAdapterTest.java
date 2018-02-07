@@ -9,7 +9,7 @@ import org.keycloak.testsuite.arquillian.annotation.UseServletFilter;
  */
 
 @UseServletFilter(filterName = "oidc-filter", filterClass = "org.keycloak.adapters.servlet.KeycloakOIDCFilter",
-        filterDependency = "org.keycloak:keycloak-servlet-filter-adapter", skipPattern = "/error.html")
+        filterDependency = "org.keycloak:keycloak-servlet-filter-adapter")
 public abstract class AbstractDemoFilterServletAdapterTest extends AbstractDemoServletsAdapterTest {
 
 
@@ -34,10 +34,4 @@ public abstract class AbstractDemoFilterServletAdapterTest extends AbstractDemoS
 
     }
 
-    @Test
-    @Override
-    @Ignore
-    public void testOIDCUiLocalesParamForwarding() {
-
-    }
 }

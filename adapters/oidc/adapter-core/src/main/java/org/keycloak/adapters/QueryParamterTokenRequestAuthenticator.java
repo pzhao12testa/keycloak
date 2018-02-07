@@ -22,8 +22,6 @@ import org.keycloak.adapters.spi.HttpFacade;
 
 /**
  * @author <a href="mailto:froehlich.ch@gmail.com">Christian Froehlich</a>
- * @author <a href="mailto:brad.culley@spartasystems.com">Brad Culley</a>
- * @author <a href="mailto:john.ament@spartasystems.com">John D. Ament</a>
  * @version $Revision: 1 $
  */
 public class QueryParamterTokenRequestAuthenticator extends BearerTokenRequestAuthenticator {
@@ -35,9 +33,6 @@ public class QueryParamterTokenRequestAuthenticator extends BearerTokenRequestAu
     }
 
     public AuthOutcome authenticate(HttpFacade exchange) {
-        if(!deployment.isOAuthQueryParameterEnabled()) {
-            return AuthOutcome.NOT_ATTEMPTED;
-        }
         tokenString = null;
         tokenString = getAccessTokenFromQueryParamter(exchange);
         if (tokenString == null || tokenString.trim().isEmpty()) {

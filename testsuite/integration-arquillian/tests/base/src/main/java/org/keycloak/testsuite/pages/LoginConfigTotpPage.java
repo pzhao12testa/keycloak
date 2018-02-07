@@ -33,12 +33,6 @@ public class LoginConfigTotpPage extends AbstractPage {
     @FindBy(css = "input[type=\"submit\"]")
     private WebElement submitButton;
 
-    @FindBy(id = "mode-barcode")
-    private WebElement barcodeLink;
-
-    @FindBy(id = "mode-manual")
-    private WebElement manualLink;
-
     public void configure(String totp) {
         totpInput.sendKeys(totp);
         submitButton.click();
@@ -54,14 +48,6 @@ public class LoginConfigTotpPage extends AbstractPage {
 
     public void open() {
         throw new UnsupportedOperationException();
-    }
-
-    public void clickManual() {
-        manualLink.click();
-    }
-
-    public void clickBarcode() {
-        barcodeLink.click();
     }
 
 }

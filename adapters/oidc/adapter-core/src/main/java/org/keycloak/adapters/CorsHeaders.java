@@ -30,5 +30,4 @@ public interface CorsHeaders {
     String ORIGIN = "Origin";
     String ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method";
     String ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers";
-    String ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers";
 }

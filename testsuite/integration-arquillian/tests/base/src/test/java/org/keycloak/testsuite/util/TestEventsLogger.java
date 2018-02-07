@@ -71,14 +71,10 @@ public class TestEventsLogger extends RunListener {
     }
 
     private void createPageSrcFile(Description d) throws IOException {
-        try {
-            if (driver != null && driver.getPageSource() != null) {
-                String pageSourceLocation = System.getProperty("page.source.location", "target/failed-tests/page-source/");
-                FileUtils.writeStringToFile(new File(pageSourceLocation + d.getTestClass().getSimpleName() + "/" + d.getMethodName() + ".html"), 
-                        driver.getPageSource());
-            }
-        } catch (IllegalStateException ex) {
-            Logger.getLogger(TestEventsLogger.class).warn(ex.getMessage());
+        if (driver != null && driver.getPageSource() != null) {
+            String pageSourceLocation = System.getProperty("page.source.location", "target/failed-tests/page-source/");
+            FileUtils.writeStringToFile(new File(pageSourceLocation + d.getTestClass().getSimpleName() + "/" + d.getMethodName() + ".html"), 
+                    driver.getPageSource());
         }
     }
 }

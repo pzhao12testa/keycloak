@@ -14,9 +14,9 @@ public class CreateRole extends AdminConsoleCreate {
     }
 
     @Page
-    private RoleDetailsForm form;
+    private RoleForm form;
     
-    public RoleDetailsForm form() {
+    public RoleForm form() {
         return form;
     }
 

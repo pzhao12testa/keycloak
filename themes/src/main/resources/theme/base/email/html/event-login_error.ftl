@@ -1,5 +1,5 @@
 <html>
 <body>
-${msg("eventLoginErrorBodyHtml",event.date,event.ipAddress)?no_esc}
+${msg("eventLoginErrorBodyHtml",event.date,event.ipAddress)}
 </body>
 </html>

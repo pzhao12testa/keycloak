@@ -171,7 +171,7 @@ public class OIDCLoginProtocolService {
 
     @Path("login-status-iframe.html")
     public Object getLoginStatusIframe() {
-        LoginStatusIframeEndpoint endpoint = new LoginStatusIframeEndpoint();
+        LoginStatusIframeEndpoint endpoint = new LoginStatusIframeEndpoint(realm);
         ResteasyProviderFactory.getInstance().injectProperties(endpoint);
         return endpoint;
     }

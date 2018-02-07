@@ -12,7 +12,7 @@
                     <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="username" class="${properties.kcInputClass!}" name="username" value="${(register.formData.username!'')}" />
+                    <input type="text" id="username" class="${properties.kcInputClass!}" name="username" value="${(register.formData.username!'')?html}" />
                 </div>
             </div>
           </#if>
@@ -21,7 +21,7 @@
                     <label for="firstName" class="${properties.kcLabelClass!}">${msg("firstName")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="firstName" class="${properties.kcInputClass!}" name="firstName" value="${(register.formData.firstName!'')}" />
+                    <input type="text" id="firstName" class="${properties.kcInputClass!}" name="firstName" value="${(register.formData.firstName!'')?html}" />
                 </div>
             </div>
 
@@ -30,7 +30,7 @@
                     <label for="lastName" class="${properties.kcLabelClass!}">${msg("lastName")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="lastName" class="${properties.kcInputClass!}" name="lastName" value="${(register.formData.lastName!'')}" />
+                    <input type="text" id="lastName" class="${properties.kcInputClass!}" name="lastName" value="${(register.formData.lastName!'')?html}" />
                 </div>
             </div>
 
@@ -39,7 +39,7 @@
                     <label for="email" class="${properties.kcLabelClass!}">${msg("email")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="email" class="${properties.kcInputClass!}" name="email" value="${(register.formData.email!'')}" />
+                    <input type="text" id="email" class="${properties.kcInputClass!}" name="email" value="${(register.formData.email!'')?html}" />
                 </div>
             </div>
 
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.street" name="user.attributes.street" value="${(register.formData['user.attributes.street']!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.street" name="user.attributes.street" value="${(register.formData['user.attributes.street']!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -77,7 +77,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.locality" name="user.attributes.locality" value="${(register.formData['user.attributes.locality']!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.locality" name="user.attributes.locality" value="${(register.formData['user.attributes.locality']!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.region" name="user.attributes.region" value="${(register.formData['user.attributes.region']!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.region" name="user.attributes.region" value="${(register.formData['user.attributes.region']!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -95,7 +95,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.postal_code" name="user.attributes.postal_code" value="${(register.formData['user.attributes.postal_code']!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.postal_code" name="user.attributes.postal_code" value="${(register.formData['user.attributes.postal_code']!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.country" name="user.attributes.country" value="${(register.formData['user.attributes.country']!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.country" name="user.attributes.country" value="${(register.formData['user.attributes.country']!'')?html}"/>
                 </div>
             </div>
             <#if recaptchaRequired??>
@@ -118,7 +118,7 @@
             <div class="${properties.kcFormGroupClass!}">
                 <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
                     <div class="${properties.kcFormOptionsWrapperClass!}">
-                        <span><a href="${url.loginUrl}">${msg("backToLogin")?no_esc}</a></span>
+                        <span><a href="${url.loginUrl}">${msg("backToLogin")}</a></span>
                     </div>
                 </div>
 

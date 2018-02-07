@@ -31,6 +31,7 @@ import org.keycloak.dom.saml.v2.assertion.SubjectType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.keys.RsaKeyMetadata;
+import org.keycloak.models.ClientSessionModel;
 import org.keycloak.models.FederatedIdentityModel;
 import org.keycloak.models.KeyManager;
 import org.keycloak.models.KeycloakSession;
@@ -54,9 +55,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import org.keycloak.dom.saml.v2.metadata.KeyTypes;
 import org.keycloak.keys.KeyMetadata;
-import org.keycloak.keys.KeyMetadata.Status;
 import org.keycloak.saml.processing.core.util.KeycloakKeySamlExtensionGenerator;
-import org.keycloak.sessions.AuthenticationSessionModel;
 
 /**
  * @author Pedro Igor
@@ -101,7 +100,7 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
                     .protocolBinding(protocolBinding)
                     .nameIdPolicy(SAML2NameIDPolicyBuilder.format(nameIDPolicyFormat));
             JaxrsSAML2BindingBuilder binding = new JaxrsSAML2BindingBuilder()
-                    .relayState(request.getState().getEncoded());
+                    .relayState(request.getState());
             boolean postBinding = getConfig().isPostBindingAuthnRequest();
 
             if (getConfig().isWantAuthnRequestsSigned()) {
@@ -133,17 +132,17 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
     }
 
     @Override
-    public void authenticationFinished(AuthenticationSessionModel authSession, BrokeredIdentityContext context)  {
+    public void attachUserSession(UserSessionModel userSession, ClientSessionModel clientSession, BrokeredIdentityContext context) {
         ResponseType responseType = (ResponseType)context.getContextData().get(SAMLEndpoint.SAML_LOGIN_RESPONSE);
         AssertionType assertion = (AssertionType)context.getContextData().get(SAMLEndpoint.SAML_ASSERTION);
         SubjectType subject = assertion.getSubject();
         SubjectType.STSubType subType = subject.getSubType();
         NameIDType subjectNameID = (NameIDType) subType.getBaseID();
-        authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT, subjectNameID.getValue());
-        if (subjectNameID.getFormat() != null) authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT_NAMEFORMAT, subjectNameID.getFormat().toString());
+        userSession.setNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT, subjectNameID.getValue());
+        if (subjectNameID.getFormat() != null) userSession.setNote(SAMLEndpoint.SAML_FEDERATED_SUBJECT_NAMEFORMAT, subjectNameID.getFormat().toString());
         AuthnStatementType authn =  (AuthnStatementType)context.getContextData().get(SAMLEndpoint.SAML_AUTHN_STATEMENT);
         if (authn != null && authn.getSessionIndex() != null) {
-            authSession.setUserSessionNote(SAMLEndpoint.SAML_FEDERATED_SESSION_INDEX, authn.getSessionIndex());
+            userSession.setNote(SAMLEndpoint.SAML_FEDERATED_SESSION_INDEX, authn.getSessionIndex());
 
         }
     }
@@ -160,7 +159,7 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
         SAML2LogoutRequestBuilder logoutBuilder = buildLogoutRequest(userSession, uriInfo, realm, singleLogoutServiceUrl);
         JaxrsSAML2BindingBuilder binding = buildLogoutBinding(session, userSession, realm);
         try {
-            int status = SimpleHttp.doPost(singleLogoutServiceUrl, session)
+            int status = SimpleHttp.doPost(singleLogoutServiceUrl)
                     .param(GeneralConstants.SAML_REQUEST_KEY, binding.postBinding(logoutBuilder.buildDocument()).encoded())
                     .param(GeneralConstants.RELAY_STATE, userSession.getId()).asStatus();
             boolean success = status >=200 && status < 400;
@@ -185,15 +184,12 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
             try {
                 SAML2LogoutRequestBuilder logoutBuilder = buildLogoutRequest(userSession, uriInfo, realm, singleLogoutServiceUrl);
                 JaxrsSAML2BindingBuilder binding = buildLogoutBinding(session, userSession, realm);
-                if (getConfig().isPostBindingLogout()) {
-                    return binding.postBinding(logoutBuilder.buildDocument()).request(singleLogoutServiceUrl);
-                } else {
-                    return binding.redirectBinding(logoutBuilder.buildDocument()).request(singleLogoutServiceUrl);
-                }
+                return binding.postBinding(logoutBuilder.buildDocument()).request(singleLogoutServiceUrl);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
+
     }
 
     protected SAML2LogoutRequestBuilder buildLogoutRequest(UserSessionModel userSession, UriInfo uriInfo, RealmModel realm, String singleLogoutServiceUrl) {
@@ -237,28 +233,18 @@ public class SAMLIdentityProvider extends AbstractIdentityProvider<SAMLIdentityP
 
 
         boolean wantAuthnRequestsSigned = getConfig().isWantAuthnRequestsSigned();
-        boolean wantAssertionsSigned = getConfig().isWantAssertionsSigned();
-        boolean wantAssertionsEncrypted = getConfig().isWantAssertionsEncrypted();
         String entityId = getEntityId(uriInfo, realm);
         String nameIDPolicyFormat = getConfig().getNameIDPolicyFormat();
 
-        StringBuilder signingKeysString = new StringBuilder();
-        StringBuilder encryptionKeysString = new StringBuilder();
+        StringBuilder keysString = new StringBuilder();
         Set<RsaKeyMetadata> keys = new TreeSet<>((o1, o2) -> o1.getStatus() == o2.getStatus() // Status can be only PASSIVE OR ACTIVE, push PASSIVE to end of list
           ? (int) (o2.getProviderPriority() - o1.getProviderPriority())
           : (o1.getStatus() == KeyMetadata.Status.PASSIVE ? 1 : -1));
         keys.addAll(session.keys().getRsaKeys(realm, false));
         for (RsaKeyMetadata key : keys) {
-            addKeyInfo(signingKeysString, key, KeyTypes.SIGNING.value());
-
-            if (key.getStatus() == Status.ACTIVE) {
-                addKeyInfo(encryptionKeysString, key, KeyTypes.ENCRYPTION.value());
-            }
+            addKeyInfo(keysString, key, KeyTypes.SIGNING.value());
         }
-        String descriptor = SPMetadataDescriptor.getSPDescriptor(authnBinding, endpoint, endpoint,
-          wantAuthnRequestsSigned, wantAssertionsSigned, wantAssertionsEncrypted,
-          entityId, nameIDPolicyFormat, signingKeysString.toString(), encryptionKeysString.toString());
-
+        String descriptor = SPMetadataDescriptor.getSPDescriptor(authnBinding, endpoint, endpoint, wantAuthnRequestsSigned, entityId, nameIDPolicyFormat, keysString.toString());
         return Response.ok(descriptor, MediaType.APPLICATION_XML_TYPE).build();
     }
 

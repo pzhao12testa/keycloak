@@ -19,8 +19,6 @@ package org.keycloak.migration.migrators;
 
 import org.keycloak.migration.ModelVersion;
 import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.representations.idm.RealmRepresentation;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -28,22 +26,6 @@ import org.keycloak.representations.idm.RealmRepresentation;
 public interface Migration {
 
     void migrate(KeycloakSession session);
-
-    /**
-     * Called after full import of representation.
-     *
-     * Implementations of this method should try not make assumptions about what was imported from the representations.
-     * We have no idea what the user will do to an exported json file.
-     *
-     * @param session
-     * @param realm
-     * @param rep
-     * @param skipUserDependent
-     */
-    default
-    void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {
-
-    }
 
     ModelVersion getVersion();
 

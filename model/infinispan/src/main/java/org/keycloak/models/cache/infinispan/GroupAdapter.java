@@ -35,7 +35,7 @@ import java.util.Set;
  * @version $Revision: 1 $
  */
 public class GroupAdapter implements GroupModel {
-    protected volatile GroupModel updated;
+    protected GroupModel updated;
     protected CachedGroup cached;
     protected RealmCacheSession cacheSession;
     protected KeycloakSession keycloakSession;
@@ -51,12 +51,12 @@ public class GroupAdapter implements GroupModel {
     protected void getDelegateForUpdate() {
         if (updated == null) {
             cacheSession.registerGroupInvalidation(cached.getId());
-            updated = cacheSession.getRealmDelegate().getGroupById(cached.getId(), realm);
+            updated = cacheSession.getDelegate().getGroupById(cached.getId(), realm);
             if (updated == null) throw new IllegalStateException("Not found in database");
         }
     }
 
-    protected volatile boolean invalidated;
+    protected boolean invalidated;
     public void invalidate() {
         invalidated = true;
     }
@@ -64,7 +64,7 @@ public class GroupAdapter implements GroupModel {
     protected boolean isUpdated() {
         if (updated != null) return true;
         if (!invalidated) return false;
-        updated = cacheSession.getRealmDelegate().getGroupById(cached.getId(), realm);
+        updated = cacheSession.getDelegate().getGroupById(cached.getId(), realm);
         if (updated == null) throw new IllegalStateException("Not found in database");
         return true;
     }

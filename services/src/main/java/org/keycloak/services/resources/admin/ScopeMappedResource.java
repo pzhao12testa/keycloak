@@ -31,7 +31,6 @@ import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -51,31 +50,22 @@ import java.util.Set;
 /**
  * Base class for managing the scope mappings of a specific client.
  *
- * @resource Scope Mappings
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ScopeMappedResource {
     protected RealmModel realm;
-    protected AdminPermissionEvaluator auth;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
-
+    private RealmAuth auth;
     protected ScopeContainerModel scopeContainer;
     protected KeycloakSession session;
     protected AdminEventBuilder adminEvent;
 
-    public ScopeMappedResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer,
-                               KeycloakSession session, AdminEventBuilder adminEvent,
-                               AdminPermissionEvaluator.RequirePermissionCheck managePermission,
-                               AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
+    public ScopeMappedResource(RealmModel realm, RealmAuth auth, ScopeContainerModel scopeContainer, KeycloakSession session, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
         this.scopeContainer = scopeContainer;
         this.session = session;
         this.adminEvent = adminEvent.resource(ResourceType.REALM_SCOPE_MAPPING);
-        this.managePermission = managePermission;
-        this.viewPermission = viewPermission;
     }
 
     /**
@@ -87,7 +77,7 @@ public class ScopeMappedResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public MappingsRepresentation getScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
@@ -135,7 +125,7 @@ public class ScopeMappedResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getRealmScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
@@ -159,21 +149,20 @@ public class ScopeMappedResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableRealmScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
         }
 
         Set<RoleModel> roles = realm.getRoles();
-        return getAvailable(auth, scopeContainer, roles);
+        return getAvailable(scopeContainer, roles);
     }
 
-    public static List<RoleRepresentation> getAvailable(AdminPermissionEvaluator auth, ScopeContainerModel client, Set<RoleModel> roles) {
+    public static List<RoleRepresentation> getAvailable(ScopeContainerModel client, Set<RoleModel> roles) {
         List<RoleRepresentation> available = new ArrayList<RoleRepresentation>();
         for (RoleModel roleModel : roles) {
             if (client.hasScope(roleModel)) continue;
-            if (!auth.roles().canMapClientScope(roleModel)) continue;
             available.add(ModelToRepresentation.toRepresentation(roleModel));
         }
         return available;
@@ -193,7 +182,7 @@ public class ScopeMappedResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeRealmScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
@@ -220,7 +209,7 @@ public class ScopeMappedResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addRealmScopeMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
@@ -246,7 +235,7 @@ public class ScopeMappedResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteRealmScopeMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
 
         if (scopeContainer == null) {
             throw new NotFoundException("Could not find client");
@@ -278,9 +267,6 @@ public class ScopeMappedResource {
     @Path("clients/{client}")
     public ScopeMappedClientResource getClientByIdScopeMappings(@PathParam("client") String client) {
         ClientModel clientModel = realm.getClientById(client);
-        if (clientModel == null) {
-            throw new NotFoundException("Could not find client");
-        }
-        return new ScopeMappedClientResource(realm, auth, this.scopeContainer, session, clientModel, adminEvent, managePermission, viewPermission);
+        return new ScopeMappedClientResource(realm, auth, this.scopeContainer, session, clientModel, adminEvent);
     }
 }

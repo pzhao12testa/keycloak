@@ -19,7 +19,6 @@ package org.keycloak.services.resources;
 import org.jboss.logging.Logger;
 import org.keycloak.Config;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.common.util.Base64Url;
 import org.keycloak.common.util.MimeTypeUtil;
 import org.keycloak.models.BrowserSecurityHeaders;
 import org.keycloak.models.KeycloakSession;
@@ -67,7 +66,7 @@ public class WelcomeResource {
 
     protected static final Logger logger = Logger.getLogger(WelcomeResource.class);
 
-    private static final String KEYCLOAK_STATE_CHECKER = "WELCOME_STATE_CHECKER";
+    private static final String KEYCLOAK_STATE_CHECKER = "KEYCLOAK_STATE_CHECKER";
 
     private boolean bootstrap;
 
@@ -105,7 +104,6 @@ public class WelcomeResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.TEXT_HTML_UTF_8)
     public Response createUser(final MultivaluedMap<String, String> formData) {
         checkBootstrap();
 
@@ -117,7 +115,9 @@ public class WelcomeResource {
                 throw new WebApplicationException(Response.Status.BAD_REQUEST);
             }
 
-            csrfCheck(formData);
+            String cookieStateChecker = getCsrfCookie();
+            String formStateChecker = formData.getFirst("stateChecker");
+            csrfCheck(cookieStateChecker, formStateChecker);
 
             String username = formData.getFirst("username");
             String password = formData.getFirst("password");
@@ -134,8 +134,6 @@ public class WelcomeResource {
             if (!password.equals(passwordConfirmation)) {
                 return createWelcomePage(null, "Password and confirmation doesn't match");
             }
-
-            expireCsrfCookie();
 
             ApplianceBootstrap applianceBootstrap = new ApplianceBootstrap(session);
             if (applianceBootstrap.isNoMasterUser()) {
@@ -184,7 +182,7 @@ public class WelcomeResource {
                 map.put("localUser", isLocal);
 
                 if (isLocal) {
-                    String stateChecker = setCsrfCookie();
+                    String stateChecker = updateCsrfChecks();
                     map.put("stateChecker", stateChecker);
                 }
             }
@@ -208,8 +206,10 @@ public class WelcomeResource {
     }
 
     private Theme getTheme() {
+        Config.Scope config = Config.scope("theme");
+        ThemeProvider themeProvider = session.getProvider(ThemeProvider.class, "extending");
         try {
-            return session.theme().getTheme(Theme.Type.WELCOME);
+            return themeProvider.getTheme(config.get("welcomeTheme"), Theme.Type.WELCOME);
         } catch (IOException e) {
             throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
         }
@@ -241,29 +241,25 @@ public class WelcomeResource {
         return inetAddress.isAnyLocalAddress() || inetAddress.isLoopbackAddress();
     }
 
-    private String setCsrfCookie() {
-        String stateChecker = Base64Url.encode(KeycloakModelUtils.generateSecret());
-        String cookiePath = uriInfo.getPath();
-        boolean secureOnly = uriInfo.getRequestUri().getScheme().equalsIgnoreCase("https");
-        CookieHelper.addCookie(KEYCLOAK_STATE_CHECKER, stateChecker, cookiePath, null, null, 300, secureOnly, true);
-        return stateChecker;
-    }
-
-    private void expireCsrfCookie() {
-        String cookiePath = uriInfo.getPath();
-        boolean secureOnly = uriInfo.getRequestUri().getScheme().equalsIgnoreCase("https");
-        CookieHelper.addCookie(KEYCLOAK_STATE_CHECKER, "", cookiePath, null, null, 0, secureOnly, true);
-    }
-
-    private void csrfCheck(final MultivaluedMap<String, String> formData) {
-        String formStateChecker = formData.getFirst("stateChecker");
-        Cookie cookie = headers.getCookies().get(KEYCLOAK_STATE_CHECKER);
-        if (cookie == null) {
-            throw new ForbiddenException();
+    private String updateCsrfChecks() {
+        String stateChecker = getCsrfCookie();
+        if (stateChecker != null) {
+            return stateChecker;
+        } else {
+            stateChecker = KeycloakModelUtils.generateSecret();
+            String cookiePath = uriInfo.getPath();
+            boolean secureOnly = uriInfo.getRequestUri().getScheme().equalsIgnoreCase("https");
+            CookieHelper.addCookie(KEYCLOAK_STATE_CHECKER, stateChecker, cookiePath, null, null, -1, secureOnly, true);
+            return stateChecker;
         }
+    }
 
-        String cookieStateChecker = cookie.getValue();
+    private String getCsrfCookie() {
+        Cookie cookie = headers.getCookies().get(KEYCLOAK_STATE_CHECKER);
+        return cookie==null ? null : cookie.getValue();
+    }
 
+    private void csrfCheck(String cookieStateChecker, String formStateChecker) {
         if (cookieStateChecker == null || !cookieStateChecker.equals(formStateChecker)) {
             throw new ForbiddenException();
         }

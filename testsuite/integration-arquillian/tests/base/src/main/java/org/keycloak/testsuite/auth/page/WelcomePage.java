@@ -21,9 +21,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
-import static org.keycloak.testsuite.page.Form.setInputValue;
-import static org.keycloak.testsuite.util.UIUtils.clickLink;
-
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
@@ -47,11 +44,16 @@ public class WelcomePage extends AuthServer {
     }
 
     public void setPassword(String username, String password) {
-        setInputValue(usernameInput, username);
-        setInputValue(passwordInput, password);
-        setInputValue(passwordConfirmationInput, password);
+        usernameInput.clear();
+        usernameInput.sendKeys(username);
 
-        clickLink(createButton);
+        passwordInput.clear();
+        passwordInput.sendKeys(password);
+
+        passwordConfirmationInput.clear();
+        passwordConfirmationInput.sendKeys(password);
+
+        createButton.click();
 
         if (!driver.getPageSource().contains("User created")) {
             throw new RuntimeException("Failed to updated password");
@@ -59,7 +61,7 @@ public class WelcomePage extends AuthServer {
     }
 
     public void navigateToAdminConsole() {
-        clickLink(driver.findElement(By.linkText("Administration Console")));
+        driver.findElement(By.linkText("Administration Console")).click();
     }
     
 }

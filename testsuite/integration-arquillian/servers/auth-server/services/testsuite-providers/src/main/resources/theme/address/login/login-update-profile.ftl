@@ -11,7 +11,7 @@
                     <label for="email" class="${properties.kcLabelClass!}">${msg("email")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="email" name="email" value="${(user.email!'')}" class="${properties.kcInputClass!}" />
+                    <input type="text" id="email" name="email" value="${(user.email!'')?html}" class="${properties.kcInputClass!}" />
                 </div>
             </div>
 
@@ -20,7 +20,7 @@
                     <label for="firstName" class="${properties.kcLabelClass!}">${msg("firstName")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="firstName" name="firstName" value="${(user.firstName!'')}" class="${properties.kcInputClass!}" />
+                    <input type="text" id="firstName" name="firstName" value="${(user.firstName!'')?html}" class="${properties.kcInputClass!}" />
                 </div>
             </div>
 
@@ -29,7 +29,7 @@
                     <label for="lastName" class="${properties.kcLabelClass!}">${msg("lastName")}</label>
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" id="lastName" name="lastName" value="${(user.lastName!'')}" class="${properties.kcInputClass!}" />
+                    <input type="text" id="lastName" name="lastName" value="${(user.lastName!'')?html}" class="${properties.kcInputClass!}" />
                 </div>
             </div>
             
@@ -39,7 +39,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.street" name="user.attributes.street" value="${(user.attributes.street!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.street" name="user.attributes.street" value="${(user.attributes.street!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -48,7 +48,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.locality" name="user.attributes.locality" value="${(user.attributes.locality!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.locality" name="user.attributes.locality" value="${(user.attributes.locality!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -57,7 +57,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.region" name="user.attributes.region" value="${(user.attributes.region!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.region" name="user.attributes.region" value="${(user.attributes.region!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.postal_code" name="user.attributes.postal_code" value="${(user.attributes.postal_code!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.postal_code" name="user.attributes.postal_code" value="${(user.attributes.postal_code!'')?html}"/>
                 </div>
             </div>
             <div class="form-group">
@@ -75,7 +75,7 @@
                 </div>
 
                 <div class="${properties.kcInputWrapperClass!}">
-                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.country" name="user.attributes.country" value="${(user.attributes.country!'')}"/>
+                    <input type="text" class="${properties.kcInputClass!}"  id="user.attributes.country" name="user.attributes.country" value="${(user.attributes.country!'')?html}"/>
                 </div>
             </div>
             

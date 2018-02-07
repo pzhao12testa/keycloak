@@ -22,12 +22,20 @@ package org.keycloak.models.session;
  */
 public class PersistentClientSessionModel {
 
+    private String clientSessionId;
     private String userSessionId;
     private String clientId;
     private String userId;
     private int timestamp;
     private String data;
 
+    public String getClientSessionId() {
+        return clientSessionId;
+    }
+
+    public void setClientSessionId(String clientSessionId) {
+        this.clientSessionId = clientSessionId;
+    }
 
     public String getUserSessionId() {
         return userSessionId;

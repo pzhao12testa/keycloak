@@ -37,8 +37,9 @@ import org.keycloak.testsuite.util.SecondBrowser;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.keycloak.testsuite.auth.page.AuthRealm.DEMO;
 import static org.keycloak.testsuite.util.URLAssert.assertCurrentUrlEquals;
 import static org.keycloak.testsuite.util.URLAssert.assertCurrentUrlStartsWithLoginUrlOf;
@@ -83,13 +84,13 @@ public abstract class AbstractSessionServletAdapterTest extends AbstractServlets
 
         // cannot pass to loginAndCheckSession becayse loginPage is not working together with driver2, therefore copypasta
         driver2.navigate().to(sessionPortalPage.toString());
-        assertCurrentUrlStartsWithLoginUrlOf(testRealmPage, driver2);
+        assertCurrentUrlStartsWithLoginUrlOf(driver2, testRealmPage);
         driver2.findElement(By.id("username")).sendKeys("bburke@redhat.com");
         driver2.findElement(By.id("password")).sendKeys("password");
         driver2.findElement(By.id("password")).submit();
-        assertCurrentUrlEquals(sessionPortalPage, driver2);
+        assertCurrentUrlEquals(driver2, sessionPortalPage);
         String pageSource = driver2.getPageSource();
-        assertThat(pageSource, containsString("Counter=1"));
+        assertTrue(pageSource.contains("Counter=1"));
         // Counter increased now
         driver2.navigate().to(sessionPortalPage.toString());
         pageSource = driver2.getPageSource();
@@ -107,12 +108,12 @@ public abstract class AbstractSessionServletAdapterTest extends AbstractServlets
 
         // Assert that I am still logged in browser2 and same session is still preserved
         driver2.navigate().to(sessionPortalPage.toString());
-        assertCurrentUrlEquals(sessionPortalPage, driver2);
+        assertCurrentUrlEquals(driver2, sessionPortalPage);
         pageSource = driver2.getPageSource();
-        assertThat(pageSource, containsString("Counter=3"));
+        assertTrue(pageSource.contains("Counter=3"));
 
         driver2.navigate().to(logoutUri);
-        assertCurrentUrlStartsWithLoginUrlOf(testRealmPage, driver2);
+        assertCurrentUrlStartsWithLoginUrlOf(driver2, testRealmPage);
 
     }
 

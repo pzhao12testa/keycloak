@@ -1,8 +1,6 @@
 package org.keycloak.example.photoz.album;
 
-import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.authorization.client.AuthzClient;
-import org.keycloak.authorization.client.ClientAuthorizationContext;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.ResourceRepresentation;
 import org.keycloak.authorization.client.representation.ScopeRepresentation;
@@ -40,6 +38,7 @@ public class AlbumService {
     private static volatile long nextId = 0;
 
     public static final String SCOPE_ALBUM_VIEW = "urn:photoz.com:scopes:album:view";
+    public static final String SCOPE_ALBUM_CREATE = "urn:photoz.com:scopes:album:create";
     public static final String SCOPE_ALBUM_DELETE = "urn:photoz.com:scopes:album:delete";
 
     @Inject
@@ -47,6 +46,12 @@ public class AlbumService {
 
     @Context
     private HttpServletRequest request;
+
+    private AuthzClient authzClient;
+
+    public AlbumService() {
+
+    }
 
     @POST
     @Consumes("application/json")
@@ -99,7 +104,7 @@ public class AlbumService {
     @Path("{id}")
     @Produces("application/json")
     public Response findById(@PathParam("id") String id) {
-        List result = this.entityManager.createQuery("from Album where id = " + Long.valueOf(id)).getResultList();
+        List result = this.entityManager.createQuery("from Album where id = " + id).getResultList();
 
         if (result.isEmpty()) {
             return Response.status(Status.NOT_FOUND).build();
@@ -143,14 +148,17 @@ public class AlbumService {
     }
 
     private AuthzClient getAuthzClient() {
-        return getAuthorizationContext().getClient();
-    }
+        if (this.authzClient == null) {
+            try {
+                AdapterConfig adapterConfig = JsonSerialization.readValue(this.request.getServletContext().getResourceAsStream("/WEB-INF/keycloak.json"), AdapterConfig.class);
+                Configuration configuration = new Configuration(adapterConfig.getAuthServerUrl(), adapterConfig.getRealm(), adapterConfig.getResource(), adapterConfig.getCredentials(), null);
 
-    private ClientAuthorizationContext getAuthorizationContext() {
-        return ClientAuthorizationContext.class.cast(getKeycloakSecurityContext().getAuthorizationContext());
-    }
+                this.authzClient = AuthzClient.create(configuration);
+            } catch (Exception e) {
+                throw new RuntimeException("Could not create authorization client.", e);
+            }
+        }
 
-    private KeycloakSecurityContext getKeycloakSecurityContext() {
-        return KeycloakSecurityContext.class.cast(request.getAttribute(KeycloakSecurityContext.class.getName()));
+        return this.authzClient;
     }
 }

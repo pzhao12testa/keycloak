@@ -20,7 +20,6 @@ package org.keycloak.services.resources.admin.info;
 import org.keycloak.broker.provider.IdentityProvider;
 import org.keycloak.broker.provider.IdentityProviderFactory;
 import org.keycloak.broker.social.SocialIdentityProvider;
-import org.keycloak.common.Profile;
 import org.keycloak.component.ComponentFactory;
 import org.keycloak.events.EventType;
 import org.keycloak.events.admin.OperationType;
@@ -130,7 +129,6 @@ public class ServerInfoAdminResource {
                 for (String name : providerIds) {
                     ProviderRepresentation provider = new ProviderRepresentation();
                     ProviderFactory<?> pi = session.getKeycloakSessionFactory().getProviderFactory(spi.getProviderClass(), name);
-                    provider.setOrder(pi.order());
                     if (ServerInfoAwareProviderFactory.class.isAssignableFrom(pi.getClass())) {
                         provider.setOperationalInfo(((ServerInfoAwareProviderFactory) pi).getOperationalInfo());
                     }
@@ -163,22 +161,19 @@ public class ServerInfoAdminResource {
     }
 
     private void setThemes(ServerInfoRepresentation info) {
+        ThemeProvider themeProvider = session.getProvider(ThemeProvider.class, "extending");
         info.setThemes(new HashMap<String, List<ThemeInfoRepresentation>>());
 
         for (Theme.Type type : Theme.Type.values()) {
-            List<String> themeNames = new LinkedList<>(session.theme().nameSet(type));
+            List<String> themeNames = new LinkedList<>(themeProvider.nameSet(type));
             Collections.sort(themeNames);
-
-            if (!Profile.isFeatureEnabled(Profile.Feature.ACCOUNT2)) {
-                themeNames.remove("keycloak-preview");
-            }
 
             List<ThemeInfoRepresentation> themes = new LinkedList<>();
             info.getThemes().put(type.toString().toLowerCase(), themes);
 
             for (String name : themeNames) {
                 try {
-                    Theme theme = session.theme().getTheme(name, type);
+                    Theme theme = themeProvider.getTheme(name, type);
                     ThemeInfoRepresentation ti = new ThemeInfoRepresentation();
                     ti.setName(name);
 

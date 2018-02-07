@@ -407,7 +407,7 @@ public class DefaultPicketLinkLogger implements PicketLinkLogger {
      */
     @Override
     public ParsingException parserExpectedEndTag(String tagName) {
-        return new ParsingException(ErrorCodes.EXPECTED_END_TAG + tagName);
+        return new ParsingException(ErrorCodes.EXPECTED_END_TAG + "RequestAbstract or XACMLAuthzDecisionQuery");
     }
 
     /*

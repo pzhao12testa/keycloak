@@ -17,12 +17,14 @@
 package org.keycloak.testsuite.saml;
 
 import org.keycloak.dom.saml.v2.protocol.AuthnRequestType;
+import org.keycloak.protocol.saml.SamlProtocol;
 import org.keycloak.representations.idm.RealmRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.saml.processing.api.saml.v2.request.SAML2Request;
+import org.keycloak.services.resources.RealmsResource;
+import org.keycloak.testsuite.AbstractAuthTest;
 import org.keycloak.testsuite.util.SamlClient;
 
-import org.keycloak.testsuite.util.saml.LoginBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collection;
@@ -31,7 +33,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import javax.ws.rs.core.UriBuilder;
+import javax.ws.rs.core.UriBuilderException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
@@ -50,7 +53,12 @@ import static org.keycloak.testsuite.util.IOUtil.loadRealm;
  * @author hmlnarik
  */
 @Ignore
-public class ConcurrentAuthnRequestTest extends AbstractSamlTest {
+public class ConcurrentAuthnRequestTest extends AbstractAuthTest {
+
+    private static final String REALM_NAME = "demo";
+
+    private static final String SAML_ASSERTION_CONSUMER_URL_SALES_POST = "http://localhost:8080/sales-post/";
+    private static final String SAML_CLIENT_ID_SALES_POST = "http://localhost:8081/sales-post/";
 
     public static final int ITERATIONS = 10000;
     public static final int CONCURRENT_THREADS = 5;
@@ -62,7 +70,7 @@ public class ConcurrentAuthnRequestTest extends AbstractSamlTest {
         ExecutorService threadPool = Executors.newFixedThreadPool(CONCURRENT_THREADS);
 
         try (CloseableHttpClient client = HttpClientBuilder.create().setRedirectStrategy(strategy).build()) {
-            HttpUriRequest post = requestBinding.createSamlUnsignedRequest(samlEndpoint, relayState, samlRequest);
+            HttpUriRequest post = requestBinding.createSamlRequest(samlEndpoint, relayState, samlRequest);
             
             Collection<Callable<Void>> futures = new LinkedList<>();
             for (int i = 0; i < ITERATIONS; i ++) {
@@ -91,7 +99,7 @@ public class ConcurrentAuthnRequestTest extends AbstractSamlTest {
             String loginPageText = EntityUtils.toString(response.getEntity(), "UTF-8");
             response.close();
 
-            HttpUriRequest loginRequest = LoginBuilder.handleLoginPage(user, loginPageText);
+            HttpUriRequest loginRequest = handleLoginPage(user, loginPageText);
 
             strategy.setRedirectable(false);
             response = client.execute(loginRequest, context);
@@ -113,6 +121,12 @@ public class ConcurrentAuthnRequestTest extends AbstractSamlTest {
 
     public AuthnRequestType createLoginRequestDocument(String issuer, String assertionConsumerURL, String realmName) {
         return SamlClient.createLoginRequestDocument(issuer, assertionConsumerURL, getAuthServerSamlEndpoint(realmName));
+    }
+
+    private URI getAuthServerSamlEndpoint(String realm) throws IllegalArgumentException, UriBuilderException {
+        return RealmsResource
+          .protocolUrl(UriBuilder.fromUri(getAuthServerRoot()))
+          .build(realm, SamlProtocol.LOGIN_PROTOCOL);
     }
 
     private void testLogin(Binding requestBinding) throws Exception {

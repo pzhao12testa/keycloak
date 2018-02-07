@@ -80,7 +80,6 @@ public class ImportedRsaKeyProviderTest extends AbstractKeycloakTest {
 
         Response response = adminClient.realm("test").components().add(rep);
         String id = ApiUtil.getCreatedId(response);
-        response.close();
 
         ComponentRepresentation createdRep = adminClient.realm("test").components().component(id).toRepresentation();
         assertEquals(ComponentRepresentation.SECRET_VALUE, createdRep.getConfig().getFirst(Attributes.PRIVATE_KEY_KEY));
@@ -117,7 +116,6 @@ public class ImportedRsaKeyProviderTest extends AbstractKeycloakTest {
 
         Response response = adminClient.realm("test").components().add(rep);
         String id = ApiUtil.getCreatedId(response);
-        response.close();
 
         ComponentRepresentation createdRep = adminClient.realm("test").components().component(id).toRepresentation();
         assertEquals(ComponentRepresentation.SECRET_VALUE, createdRep.getConfig().getFirst(Attributes.PRIVATE_KEY_KEY));
@@ -208,7 +206,6 @@ public class ImportedRsaKeyProviderTest extends AbstractKeycloakTest {
 
         ErrorRepresentation errorRepresentation = response.readEntity(ErrorRepresentation.class);
         assertEquals(error, errorRepresentation.getErrorMessage());
-        response.close();
     }
 
     protected ComponentRepresentation createRep(String name, String providerId) {

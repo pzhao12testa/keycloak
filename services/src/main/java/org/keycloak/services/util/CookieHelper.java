@@ -17,19 +17,11 @@
 
 package org.keycloak.services.util;
 
-import java.net.URI;
-
 import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.util.ServerCookie;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-import org.keycloak.services.managers.AuthenticationManager;
 
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -57,11 +49,5 @@ public class CookieHelper {
         response.getOutputHeaders().add(HttpHeaders.SET_COOKIE, cookie);
     }
 
-
-    public static String getCookieValue(String name) {
-        HttpHeaders headers = ResteasyProviderFactory.getContextData(HttpHeaders.class);
-        Cookie cookie = headers.getCookies().get(name);
-        return cookie != null ? cookie.getValue() : null;
-    }
 
 }

@@ -17,7 +17,6 @@
 package org.keycloak.storage;
 
 import org.keycloak.component.ComponentModel;
-import org.keycloak.models.ClientModel;
 import org.keycloak.models.UserModel;
 
 import java.io.Serializable;
@@ -76,15 +75,8 @@ public class StorageId implements Serializable {
     public static boolean isLocalStorage(UserModel user) {
         return new StorageId(user.getId()).getProviderId() == null;
     }
-    public static boolean isLocalStorage(String id) {
-        return new StorageId(id).getProviderId() == null;
-    }
-
-    public static String resolveProviderId(ClientModel client) {
-        return new StorageId(client.getId()).getProviderId();
-    }
-    public static boolean isLocalStorage(ClientModel client) {
-        return new StorageId(client.getId()).getProviderId() == null;
+    public static boolean isLocalStorage(String userId) {
+        return new StorageId(userId).getProviderId() == null;
     }
     public boolean isLocal() {
         return getProviderId() == null;

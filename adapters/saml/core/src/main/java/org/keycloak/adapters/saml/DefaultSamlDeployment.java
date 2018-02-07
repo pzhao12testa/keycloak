@@ -31,7 +31,6 @@ import org.keycloak.adapters.saml.rotation.SamlDescriptorPublicKeyLocator;
 import org.keycloak.rotation.CompositeKeyLocator;
 import org.keycloak.rotation.HardcodedKeyLocator;
 import org.keycloak.rotation.KeyLocator;
-import java.net.URI;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -46,7 +45,6 @@ public class DefaultSamlDeployment implements SamlDeployment {
         private Binding requestBinding;
         private Binding responseBinding;
         private String requestBindingUrl;
-        private URI assertionConsumerServiceUrl;
 
         @Override
         public boolean signRequest() {
@@ -76,15 +74,6 @@ public class DefaultSamlDeployment implements SamlDeployment {
         @Override
         public String getRequestBindingUrl() {
             return requestBindingUrl;
-        }
-
-        @Override
-        public URI getAssertionConsumerServiceUrl() {
-            return assertionConsumerServiceUrl;
-        }
-
-        public void setAssertionConsumerServiceUrl(URI assertionConsumerServiceUrl) {
-            this.assertionConsumerServiceUrl = assertionConsumerServiceUrl;
         }
 
         public void setSignRequest(boolean signRequest) {
@@ -288,13 +277,13 @@ public class DefaultSamlDeployment implements SamlDeployment {
     private boolean turnOffChangeSessionIdOnLogin;
     private PrivateKey decryptionKey;
     private KeyPair signingKeyPair;
+    private String assertionConsumerServiceUrl;
     private Set<String> roleAttributeNames;
     private PrincipalNamePolicy principalNamePolicy = PrincipalNamePolicy.FROM_NAME_ID;
     private String principalAttributeName;
     private String logoutPage;
     private SignatureAlgorithm signatureAlgorithm;
     private String signatureCanonicalizationMethod;
-    private boolean autodetectBearerOnly;
 
     @Override
     public boolean turnOffChangeSessionIdOnLogin() {
@@ -352,6 +341,11 @@ public class DefaultSamlDeployment implements SamlDeployment {
     }
 
     @Override
+    public String getAssertionConsumerServiceUrl() {
+        return assertionConsumerServiceUrl;
+    }
+
+    @Override
     public Set<String> getRoleAttributeNames() {
         return roleAttributeNames;
     }
@@ -402,6 +396,10 @@ public class DefaultSamlDeployment implements SamlDeployment {
         this.signingKeyPair = signingKeyPair;
     }
 
+    public void setAssertionConsumerServiceUrl(String assertionConsumerServiceUrl) {
+        this.assertionConsumerServiceUrl = assertionConsumerServiceUrl;
+    }
+
     public void setRoleAttributeNames(Set<String> roleAttributeNames) {
         this.roleAttributeNames = roleAttributeNames;
     }
@@ -439,14 +437,5 @@ public class DefaultSamlDeployment implements SamlDeployment {
 
     public void setSignatureAlgorithm(SignatureAlgorithm signatureAlgorithm) {
         this.signatureAlgorithm = signatureAlgorithm;
-    }
-
-    @Override
-    public boolean isAutodetectBearerOnly() {
-        return autodetectBearerOnly;
-    }
-
-    public void setAutodetectBearerOnly(boolean autodetectBearerOnly) {
-        this.autodetectBearerOnly = autodetectBearerOnly;
     }
 }

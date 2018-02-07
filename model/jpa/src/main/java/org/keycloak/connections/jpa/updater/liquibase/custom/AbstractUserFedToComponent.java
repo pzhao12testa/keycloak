@@ -35,8 +35,7 @@ public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
     private final Logger logger = Logger.getLogger(getClass());
     protected void convertFedProviderToComponent(String providerId, String newMapperType) throws CustomChangeException {
         try {
-            PreparedStatement statement = jdbcConnection.prepareStatement("select ID, REALM_ID, PRIORITY, DISPLAY_NAME, FULL_SYNC_PERIOD, CHANGED_SYNC_PERIOD, LAST_SYNC from " + getTableName("USER_FEDERATION_PROVIDER") + " WHERE PROVIDER_NAME=?");
-            statement.setString(1, providerId);
+            PreparedStatement statement = jdbcConnection.prepareStatement("select ID, REALM_ID, PRIORITY, DISPLAY_NAME, FULL_SYNC_PERIOD, CHANGED_SYNC_PERIOD, LAST_SYNC from " + getTableName("USER_FEDERATION_PROVIDER") + " WHERE PROVIDER_NAME='" + providerId + "'");
 
             try {
                 ResultSet resultSet = statement.executeQuery();
@@ -89,13 +88,10 @@ public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
                         }
 
                         DeleteStatement configDelete = new DeleteStatement(null, null, database.correctObjectName("USER_FEDERATION_CONFIG", Table.class));
-                        configDelete.setWhere("USER_FEDERATION_PROVIDER_ID=?");
-                        configDelete.addWhereParameters(id);
-
+                        configDelete.setWhere("USER_FEDERATION_PROVIDER_ID='" + id + "'");
                         statements.add(configDelete);
                         DeleteStatement deleteStatement = new DeleteStatement(null, null, database.correctObjectName("USER_FEDERATION_PROVIDER", Table.class));
-                        deleteStatement.setWhere("ID=?");
-                        deleteStatement.addWhereParameters(id);
+                        deleteStatement.setWhere("ID='" + id + "'");
                         statements.add(deleteStatement);
 
                     }
@@ -122,8 +118,7 @@ public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
 
     protected void convertFedMapperToComponent(String realmId, String parentId, String newMapperType) throws CustomChangeException {
         try {
-            PreparedStatement statement = jdbcConnection.prepareStatement("select ID, NAME, FEDERATION_MAPPER_TYPE from " + getTableName("USER_FEDERATION_MAPPER") + " WHERE FEDERATION_PROVIDER_ID=?");
-            statement.setString(1, parentId);
+            PreparedStatement statement = jdbcConnection.prepareStatement("select ID, NAME, FEDERATION_MAPPER_TYPE from " + getTableName("USER_FEDERATION_MAPPER") + " WHERE FEDERATION_PROVIDER_ID='" + parentId + "'");
 
             try {
                 ResultSet resultSet = statement.executeQuery();
@@ -162,12 +157,10 @@ public abstract class AbstractUserFedToComponent extends CustomKeycloakTask {
                             configStatement.close();
                         }
                         DeleteStatement configDelete = new DeleteStatement(null, null, database.correctObjectName("USER_FEDERATION_MAPPER_CONFIG", Table.class));
-                        configDelete.setWhere("USER_FEDERATION_MAPPER_ID=?");
-                        configDelete.addWhereParameters(id);
+                        configDelete.setWhere("USER_FEDERATION_MAPPER_ID='" + id + "'");
                         statements.add(configDelete);
                         DeleteStatement deleteStatement = new DeleteStatement(null, null, database.correctObjectName("USER_FEDERATION_MAPPER", Table.class));
-                        deleteStatement.setWhere("ID=?");
-                        deleteStatement.addWhereParameters(id);
+                        deleteStatement.setWhere("ID='" + id + "'");
                         statements.add(deleteStatement);
 
 

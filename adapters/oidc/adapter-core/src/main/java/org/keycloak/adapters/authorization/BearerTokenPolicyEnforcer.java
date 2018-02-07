@@ -17,8 +17,6 @@
  */
 package org.keycloak.adapters.authorization;
 
-import java.util.HashSet;
-
 import org.jboss.logging.Logger;
 import org.keycloak.adapters.OIDCHttpFacade;
 import org.keycloak.adapters.spi.HttpFacade;
@@ -26,8 +24,9 @@ import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.representation.PermissionRequest;
 import org.keycloak.authorization.client.resource.PermissionResource;
 import org.keycloak.authorization.client.resource.ProtectionResource;
-import org.keycloak.representations.adapters.config.PolicyEnforcerConfig;
 import org.keycloak.representations.adapters.config.PolicyEnforcerConfig.PathConfig;
+
+import java.util.Set;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -41,9 +40,9 @@ public class BearerTokenPolicyEnforcer extends AbstractPolicyEnforcer {
     }
 
     @Override
-    protected boolean challenge(PathConfig pathConfig, PolicyEnforcerConfig.MethodConfig methodConfig, OIDCHttpFacade facade) {
+    protected boolean challenge(PathConfig pathConfig, Set<String> requiredScopes, OIDCHttpFacade facade) {
         if (getEnforcerConfig().getUserManagedAccess() != null) {
-            challengeUmaAuthentication(pathConfig, methodConfig, facade);
+            challengeUmaAuthentication(pathConfig, requiredScopes, facade);
         } else {
             challengeEntitlementAuthentication(facade);
         }
@@ -53,34 +52,28 @@ public class BearerTokenPolicyEnforcer extends AbstractPolicyEnforcer {
     private void challengeEntitlementAuthentication(OIDCHttpFacade facade) {
         HttpFacade.Response response = facade.getResponse();
         AuthzClient authzClient = getAuthzClient();
-        String clientId = authzClient.getConfiguration().getResource();
+        String clientId = authzClient.getConfiguration().getClientId();
         String  authorizationServerUri = authzClient.getServerConfiguration().getIssuer().toString() + "/authz/entitlement";
         response.setStatus(401);
         response.setHeader("WWW-Authenticate", "KC_ETT realm=\"" + clientId + "\",as_uri=\"" + authorizationServerUri + "\"");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Sending Entitlement challenge");
-        }
     }
 
-    private void challengeUmaAuthentication(PathConfig pathConfig, PolicyEnforcerConfig.MethodConfig methodConfig, OIDCHttpFacade facade) {
+    private void challengeUmaAuthentication(PathConfig pathConfig, Set<String> requiredScopes, OIDCHttpFacade facade) {
         HttpFacade.Response response = facade.getResponse();
         AuthzClient authzClient = getAuthzClient();
-        String ticket = getPermissionTicket(pathConfig, methodConfig, authzClient);
-        String clientId = authzClient.getConfiguration().getResource();
+        String ticket = getPermissionTicket(pathConfig, requiredScopes, authzClient);
+        String clientId = authzClient.getConfiguration().getClientId();
         String authorizationServerUri = authzClient.getServerConfiguration().getIssuer().toString() + "/authz/authorize";
         response.setStatus(401);
         response.setHeader("WWW-Authenticate", "UMA realm=\"" + clientId + "\",as_uri=\"" + authorizationServerUri + "\",ticket=\"" + ticket + "\"");
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Sending UMA challenge");
-        }
     }
 
-    private String getPermissionTicket(PathConfig pathConfig, PolicyEnforcerConfig.MethodConfig methodConfig, AuthzClient authzClient) {
+    private String getPermissionTicket(PathConfig pathConfig, Set<String> requiredScopes, AuthzClient authzClient) {
         ProtectionResource protection = authzClient.protection();
         PermissionResource permission = protection.permission();
         PermissionRequest permissionRequest = new PermissionRequest();
         permissionRequest.setResourceSetId(pathConfig.getId());
-        permissionRequest.setScopes(new HashSet<>(methodConfig.getScopes()));
+        permissionRequest.setScopes(requiredScopes);
         return permission.forResource(permissionRequest).getTicket();
     }
 }

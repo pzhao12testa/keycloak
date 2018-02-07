@@ -25,7 +25,6 @@ public enum AlgorithmType {
 
     RSA,
     HMAC,
-    AES,
     ECDSA
 
 }

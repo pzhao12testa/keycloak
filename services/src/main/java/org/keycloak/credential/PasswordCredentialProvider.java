@@ -56,14 +56,12 @@ public class PasswordCredentialProvider implements CredentialProvider, Credentia
     }
 
     public CredentialModel getPassword(RealmModel realm, UserModel user) {
-        List<CredentialModel> passwords = null;
+        List<CredentialModel> passwords;
         if (user instanceof CachedUserModel && !((CachedUserModel)user).isMarkedForEviction()) {
             CachedUserModel cached = (CachedUserModel)user;
             passwords = (List<CredentialModel>)cached.getCachedWith().get(PASSWORD_CACHE_KEY);
 
-        }
-        // if the model was marked for eviction while passwords were initialized, override it from credentialStore
-        if (! (user instanceof CachedUserModel) || ((CachedUserModel) user).isMarkedForEviction()) {
+        } else {
             passwords = getCredentialStore().getStoredCredentialsByType(realm, user, CredentialModel.PASSWORD);
         }
         if (passwords == null || passwords.isEmpty()) return null;
@@ -97,7 +95,7 @@ public class PasswordCredentialProvider implements CredentialProvider, Credentia
         newPassword.setType(CredentialModel.PASSWORD);
         long createdDate = Time.currentTimeMillis();
         newPassword.setCreatedDate(createdDate);
-        hash.encode(cred.getValue(), policy.getHashIterations(), newPassword);
+        hash.encode(cred.getValue(), policy, newPassword);
         getCredentialStore().createCredential(realm, user, newPassword);
         UserCache userCache = session.userCache();
         if (userCache != null) {
@@ -209,10 +207,8 @@ public class PasswordCredentialProvider implements CredentialProvider, Credentia
             return true;
         }
 
-        CredentialModel newPassword = password.shallowClone();
-        hash.encode(cred.getValue(), policy.getHashIterations(), newPassword);
-        getCredentialStore().updateCredential(realm, user, newPassword);
-
+        hash.encode(cred.getValue(), policy, password);
+        getCredentialStore().updateCredential(realm, user, password);
         UserCache userCache = session.userCache();
         if (userCache != null) {
             userCache.evict(realm, user);

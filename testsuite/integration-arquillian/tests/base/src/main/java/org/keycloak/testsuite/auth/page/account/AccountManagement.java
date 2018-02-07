@@ -24,7 +24,6 @@ import org.openqa.selenium.support.FindBy;
 
 import javax.ws.rs.core.UriBuilder;
 
-import static org.keycloak.testsuite.util.WaitUtils.waitForPageToLoad;
 import static org.keycloak.testsuite.util.WaitUtils.waitUntilElement;
 
 /**
@@ -78,7 +77,6 @@ public class AccountManagement extends AuthRealm implements PageWithLogOutAction
 
     public void signOut() {
         signOutLink.click();
-        waitForPageToLoad();
     }
     
     @Override
@@ -88,36 +86,34 @@ public class AccountManagement extends AuthRealm implements PageWithLogOutAction
     
     public void account() {
         accountLink.click();
-        waitForPageToLoad();
     }
 
     public void password() {
         passwordLink.click();
-        waitForPageToLoad();
     }
 
     public void authenticator() {
         authenticatorLink.click();
-        waitForPageToLoad();
     }
 
     public void sessions() {
         sessionsLink.click();
-        waitForPageToLoad();
     }
 
     public void applications() {
         applicationsLink.click();
-        waitForPageToLoad();
     }
 
     public void save() {
         save.click();
-        waitForPageToLoad();
     }
 
 //    public RealmResource realmResource() {
 //        return keycloak().realm(getAuthRealm());
 //    }
+
+    public void waitForAccountLinkPresent() {
+        waitUntilElement(accountLink, "account link should be present").is().present();
+    }
 
 }

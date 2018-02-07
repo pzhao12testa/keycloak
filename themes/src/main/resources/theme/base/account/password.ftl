@@ -11,7 +11,8 @@
     </div>
 
     <form action="${url.passwordUrl}" class="form-horizontal" method="post">
-        <input type="text" id="username" name="username" value="${(account.username!'')}" autocomplete="username" readonly="readonly" style="display:none;">
+        <input type="text" readonly value="this is not a login form" style="display: none;">
+        <input type="password" readonly value="this is not a login form" style="display: none;">
 
         <#if password.passwordSet>
             <div class="form-group">
@@ -20,12 +21,12 @@
                 </div>
 
                 <div class="col-sm-10 col-md-10">
-                    <input type="password" class="form-control" id="password" name="password" autofocus autocomplete="current-password">
+                    <input type="password" class="form-control" id="password" name="password" autofocus autocomplete="off">
                 </div>
             </div>
         </#if>
 
-        <input type="hidden" id="stateChecker" name="stateChecker" value="${stateChecker}">
+        <input type="hidden" id="stateChecker" name="stateChecker" value="${stateChecker?html}">
 
         <div class="form-group">
             <div class="col-sm-2 col-md-2">
@@ -33,7 +34,7 @@
             </div>
 
             <div class="col-sm-10 col-md-10">
-                <input type="password" class="form-control" id="password-new" name="password-new" autocomplete="new-password">
+                <input type="password" class="form-control" id="password-new" name="password-new" autocomplete="off">
             </div>
         </div>
 
@@ -43,7 +44,7 @@
             </div>
 
             <div class="col-sm-10 col-md-10">
-                <input type="password" class="form-control" id="password-confirm" name="password-confirm" autocomplete="new-password">
+                <input type="password" class="form-control" id="password-confirm" name="password-confirm" autocomplete="off">
             </div>
         </div>
 

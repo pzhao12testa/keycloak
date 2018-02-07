@@ -153,7 +153,6 @@ public class JavaKeystoreKeyProviderTest extends AbstractKeycloakTest {
 
         ErrorRepresentation errorRepresentation = response.readEntity(ErrorRepresentation.class);
         assertTrue(errorRepresentation.getErrorMessage().startsWith(error));
-        response.close();
     }
 
     protected ComponentRepresentation createRep(String name, long priority) {

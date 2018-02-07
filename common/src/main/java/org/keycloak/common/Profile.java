@@ -21,8 +21,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -33,26 +35,19 @@ import java.util.Set;
 public class Profile {
 
     public enum Feature {
-        AUTHORIZATION, IMPERSONATION, SCRIPTS, DOCKER, ACCOUNT2, TOKEN_EXCHANGE
-    }
-
-    private enum ProductValue {
-        KEYCLOAK(),
-        RHSSO(Feature.ACCOUNT2);
-
-        private List<Feature> excluded;
-
-        ProductValue(Feature... excluded) {
-            this.excluded = Arrays.asList(excluded);
-        }
+        AUTHORIZATION, IMPERSONATION, SCRIPTS
     }
 
     private enum ProfileValue {
-        PRODUCT(Feature.AUTHORIZATION, Feature.SCRIPTS, Feature.DOCKER, Feature.ACCOUNT2, Feature.TOKEN_EXCHANGE),
-        PREVIEW(Feature.ACCOUNT2),
-        COMMUNITY(Feature.DOCKER, Feature.ACCOUNT2);
+        PRODUCT(Feature.AUTHORIZATION, Feature.SCRIPTS),
+        PREVIEW,
+        COMMUNITY;
 
         private List<Feature> disabled;
+
+        ProfileValue() {
+            this.disabled = Collections.emptyList();
+        }
 
         ProfileValue(Feature... disabled) {
             this.disabled = Arrays.asList(disabled);
@@ -61,15 +56,11 @@ public class Profile {
 
     private static final Profile CURRENT = new Profile();
 
-    private final ProductValue product;
-
     private final ProfileValue profile;
 
     private final Set<Feature> disabledFeatures = new HashSet<>();
 
     private Profile() {
-        product = "rh-sso".equals(Version.NAME) ? ProductValue.RHSSO : ProductValue.KEYCLOAK;
-
         try {
             Properties props = new Properties();
 
@@ -98,7 +89,6 @@ public class Profile {
             }
 
             disabledFeatures.addAll(profile.disabled);
-            disabledFeatures.removeAll(product.excluded);
 
             for (String k : props.stringPropertyNames()) {
                 if (k.startsWith("feature.")) {
@@ -124,9 +114,6 @@ public class Profile {
     }
 
     public static boolean isFeatureEnabled(Feature feature) {
-        if (CURRENT.product.excluded.contains(feature)) {
-            return false;
-        }
         return !CURRENT.disabledFeatures.contains(feature);
     }
 

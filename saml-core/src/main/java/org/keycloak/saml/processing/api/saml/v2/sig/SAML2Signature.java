@@ -49,6 +49,8 @@ public class SAML2Signature {
 
     private static final PicketLinkLogger logger = PicketLinkLoggerFactory.getLogger();
 
+    private static final String ID_ATTRIBUTE_NAME = "ID";
+
     private String signatureMethod = SignatureMethod.RSA_SHA1;
 
     private String digestMethod = DigestMethod.SHA1;
@@ -154,7 +156,7 @@ public class SAML2Signature {
      */
     public void signSAMLDocument(Document samlDocument, String keyName, KeyPair keypair, String canonicalizationMethodType) throws ProcessingException {
         // Get the ID from the root
-        String id = samlDocument.getDocumentElement().getAttribute(JBossSAMLConstants.ID.get());
+        String id = samlDocument.getDocumentElement().getAttribute(ID_ATTRIBUTE_NAME);
         try {
             sign(samlDocument, id, keyName, keypair, canonicalizationMethodType);
         } catch (ParserConfigurationException | GeneralSecurityException | MarshalException | XMLSignatureException e) {
@@ -208,20 +210,18 @@ public class SAML2Signature {
      *
      * @param document SAML document to have its ID attribute configured.
      */
-    public static void configureIdAttribute(Document document) {
+    private void configureIdAttribute(Document document) {
         // Estabilish the IDness of the ID attribute.
-        configureIdAttribute(document.getDocumentElement());
+        document.getDocumentElement().setIdAttribute(ID_ATTRIBUTE_NAME, true);
 
         NodeList nodes = document.getElementsByTagNameNS(JBossSAMLURIConstants.ASSERTION_NSURI.get(),
                 JBossSAMLConstants.ASSERTION.get());
 
         for (int i = 0; i < nodes.getLength(); i++) {
-            configureIdAttribute((Element) nodes.item(i));
+            Node n = nodes.item(i);
+            if (n instanceof Element) {
+                ((Element) n).setIdAttribute(ID_ATTRIBUTE_NAME, true);
+            }
         }
     }
-    
-    public static void configureIdAttribute(Element element) {
-        element.setIdAttribute(JBossSAMLConstants.ID.get(), true);
-    }
-
 }

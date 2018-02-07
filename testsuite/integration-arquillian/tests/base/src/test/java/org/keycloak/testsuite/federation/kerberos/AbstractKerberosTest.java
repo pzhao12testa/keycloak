@@ -17,9 +17,6 @@
 
 package org.keycloak.testsuite.federation.kerberos;
 
-import static org.keycloak.testsuite.admin.AbstractAdminTest.loadJson;
-import static org.keycloak.testsuite.admin.ApiUtil.findClientByClientId;
-
 import java.net.URI;
 import java.security.Principal;
 import java.util.Hashtable;
@@ -40,7 +37,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.ietf.jgss.GSSCredential;
 import org.jboss.arquillian.graphene.page.Page;
@@ -48,7 +44,6 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -80,6 +75,8 @@ import org.keycloak.testsuite.auth.page.AuthRealm;
 import org.keycloak.testsuite.pages.AccountPasswordPage;
 import org.keycloak.testsuite.pages.LoginPage;
 import org.keycloak.testsuite.util.OAuthClient;
+import static org.keycloak.testsuite.admin.AbstractAdminTest.loadJson;
+import static org.keycloak.testsuite.admin.ApiUtil.findClientByClientId;
 
 /**
  * @author <a href="mailto:mposolda@redhat.com">Marek Posolda</a>
@@ -105,8 +102,6 @@ public abstract class AbstractKerberosTest extends AbstractAuthTest {
 
     protected abstract void setKrb5ConfPath();
 
-    protected abstract boolean isStartEmbeddedLdapServer();
-
     @Override
     public void addTestRealms(List<RealmRepresentation> testRealms) {
         RealmRepresentation realmRep = loadJson(getClass().getResourceAsStream("/kerberos/kerberosrealm.json"), RealmRepresentation.class);
@@ -130,9 +125,7 @@ public abstract class AbstractKerberosTest extends AbstractAuthTest {
         oauth.clientId("kerberos-app");
 
         ComponentRepresentation rep = getUserStorageConfiguration();
-        Response resp = testRealmResource().components().add(rep);
-        getCleanup().addComponentId(ApiUtil.getCreatedId(resp));
-        resp.close();
+        testRealmResource().components().add(rep);
     }
 
     @After
@@ -261,8 +254,7 @@ public abstract class AbstractKerberosTest extends AbstractAuthTest {
 
     @Test
     public void credentialDelegationTest() throws Exception {
-    	Assume.assumeTrue("Ignoring test as the embedded server is not started", isStartEmbeddedLdapServer());
-    	// Add kerberos delegation credential mapper
+        // Add kerberos delegation credential mapper
         ProtocolMapperModel protocolMapper = UserSessionNoteMapper.createClaimMapper(KerberosConstants.GSS_DELEGATION_CREDENTIAL_DISPLAY_NAME,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL,
                 KerberosConstants.GSS_DELEGATION_CREDENTIAL, "String",
@@ -348,10 +340,7 @@ public abstract class AbstractKerberosTest extends AbstractAuthTest {
             cleanupApacheHttpClient();
         }
 
-        DefaultHttpClient httpClient = (DefaultHttpClient) new HttpClientBuilder()
-                .disableCookieCache(false)
-                .build();
-
+        DefaultHttpClient httpClient = (DefaultHttpClient) new HttpClientBuilder().build();
         httpClient.getAuthSchemes().register(AuthPolicy.SPNEGO, spnegoSchemeFactory);
 
         if (useSpnego) {
@@ -436,14 +425,6 @@ public abstract class AbstractKerberosTest extends AbstractAuthTest {
         testRealmResource().components().component(kerberosProvider.getId()).update(kerberosProvider);
     }
 
-    protected void updateProviderValidatePasswordPolicy(Boolean validatePasswordPolicy) {
-        List<ComponentRepresentation> reps = testRealmResource().components().query("test", UserStorageProvider.class.getName());
-        Assert.assertEquals(1, reps.size());
-        ComponentRepresentation kerberosProvider = reps.get(0);
-        kerberosProvider.getConfig().putSingle(LDAPConstants.VALIDATE_PASSWORD_POLICY, validatePasswordPolicy.toString());
-        testRealmResource().components().component(kerberosProvider.getId()).update(kerberosProvider);
-    }
-    
     public RealmResource testRealmResource() {
         return adminClient.realm("test");
     }

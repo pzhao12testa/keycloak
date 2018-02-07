@@ -22,10 +22,12 @@ import org.keycloak.component.ComponentModel;
 import org.keycloak.provider.ProviderEvent;
 import org.keycloak.storage.UserStorageProvider;
 import org.keycloak.storage.UserStorageProviderModel;
-import org.keycloak.storage.client.ClientStorageProvider;
-import org.keycloak.storage.client.ClientStorageProviderModel;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -125,8 +127,6 @@ public interface RealmModel extends RoleContainerModel {
     //--- brute force settings
     boolean isBruteForceProtected();
     void setBruteForceProtected(boolean value);
-    boolean isPermanentLockout();
-    void setPermanentLockout(boolean val);
     int getMaxFailureWaitSeconds();
     void setMaxFailureWaitSeconds(int val);
     int getWaitIncrementSeconds();
@@ -145,11 +145,11 @@ public interface RealmModel extends RoleContainerModel {
     boolean isVerifyEmail();
 
     void setVerifyEmail(boolean verifyEmail);
-
+    
     boolean isLoginWithEmailAllowed();
 
     void setLoginWithEmailAllowed(boolean loginWithEmailAllowed);
-
+    
     boolean isDuplicateEmailsAllowed();
 
     void setDuplicateEmailsAllowed(boolean duplicateEmailsAllowed);
@@ -160,9 +160,6 @@ public interface RealmModel extends RoleContainerModel {
 
     boolean isRevokeRefreshToken();
     void setRevokeRefreshToken(boolean revokeRefreshToken);
-
-    int getRefreshTokenMaxReuse();
-    void setRefreshTokenMaxReuse(int revokeRefreshTokenCount);
 
     int getSsoSessionIdleTimeout();
     void setSsoSessionIdleTimeout(int seconds);
@@ -188,25 +185,9 @@ public interface RealmModel extends RoleContainerModel {
 
     void setAccessCodeLifespanUserAction(int seconds);
 
-    /**
-     * This method will return a map with all the lifespans available
-     * or an empty map, but never null.
-     * @return map with user action token lifespans
-     */
-    Map<String, Integer> getUserActionTokenLifespans();
-
     int getAccessCodeLifespanLogin();
 
     void setAccessCodeLifespanLogin(int seconds);
-
-    int getActionTokenGeneratedByAdminLifespan();
-    void setActionTokenGeneratedByAdminLifespan(int seconds);
-
-    int getActionTokenGeneratedByUserLifespan();
-    void setActionTokenGeneratedByUserLifespan(int seconds);
-
-    int getActionTokenGeneratedByUserLifespan(String actionTokenType);
-    void setActionTokenGeneratedByUserLifespan(String actionTokenType, Integer seconds);
 
     List<RequiredCredentialModel> getRequiredCredentials();
 
@@ -261,9 +242,6 @@ public interface RealmModel extends RoleContainerModel {
 
     AuthenticationFlowModel getClientAuthenticationFlow();
     void setClientAuthenticationFlow(AuthenticationFlowModel flow);
-
-    AuthenticationFlowModel getDockerAuthenticationFlow();
-    void setDockerAuthenticationFlow(AuthenticationFlowModel flow);
 
     List<AuthenticationFlowModel> getAuthenticationFlows();
     AuthenticationFlowModel getFlowByAlias(String alias);
@@ -343,16 +321,6 @@ public interface RealmModel extends RoleContainerModel {
         return list;
     }
 
-    default
-    List<ClientStorageProviderModel> getClientStorageProviders() {
-        List<ClientStorageProviderModel> list = new LinkedList<>();
-        for (ComponentModel component : getComponents(getId(), ClientStorageProvider.class.getName())) {
-            list.add(new ClientStorageProviderModel(component));
-        }
-        Collections.sort(list, ClientStorageProviderModel.comparator);
-        return list;
-    }
-
     String getLoginTheme();
 
     void setLoginTheme(String name);
@@ -425,11 +393,7 @@ public interface RealmModel extends RoleContainerModel {
 
     GroupModel getGroupById(String id);
     List<GroupModel> getGroups();
-    Long getGroupsCount(Boolean onlyTopGroups);
-    Long getGroupsCountByNameContaining(String search);
     List<GroupModel> getTopLevelGroups();
-    List<GroupModel> getTopLevelGroups(Integer first, Integer max);
-    List<GroupModel> searchForGroupByName(String search, Integer first, Integer max);
     boolean removeGroup(GroupModel group);
     void moveGroup(GroupModel group, GroupModel toParent);
 

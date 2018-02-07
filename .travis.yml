@@ -1,28 +1,31 @@
-language: java
-dist: precise
-
+before_cache:
+- rm -rf $HOME/.m2/repository/org/keycloak
+before_script:
+- export MAVEN_SKIP_RC=true
 cache:
-  cache: false
-
+  directories:
+  - $HOME/.m2
 env:
   global:
-    - MAVEN_SKIP_RC=true
-    - MAVEN_OPTS="-Xms512m -Xmx1536m"
+  - MAVEN_SKIP_RC=true
+  - MAVEN_OPTS="-Xms512m -Xmx2048m"
   matrix:
-    - TESTS=unit
-    - TESTS=server-group1
-    - TESTS=server-group2
-    - TESTS=server-group3
-    - TESTS=server-group4
-    - TESTS=old
-    - TESTS=crossdc
-
+  - TESTS=group1
+  - TESTS=group2
+  - TESTS=group3
+  - TESTS=group4
+  - TESTS=adapter
+  - TESTS=old
+install:
+- travis_wait 60 mvn install -Pdistribution -DskipTests=true -B -V -q
 jdk:
-  - oraclejdk8
-
-install: true
-
-script: 
-  - ./travis-run-tests.sh $TESTS
-
+- oraclejdk8
+language: java
+script:
+- touch /tmp/NOW
+- echo GIBSTUDYSTART $(date)
+- ./travis-run-tests.sh $TESTS
+- echo GIBSTUDYEND $(date)
+- cd $TRAVIS_BUILD_DIR
+- echo TESTNUM $(find . -name TEST-*.xml -newer /tmp/NOW | wc -l)
 sudo: false

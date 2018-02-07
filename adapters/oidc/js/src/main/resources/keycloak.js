@@ -33,13 +33,6 @@
             interval: 5
         };
 
-        var scripts = document.getElementsByTagName('script');
-        for (var i = 0; i < scripts.length; i++) {
-            if ((scripts[i].src.indexOf('keycloak.js') !== -1 || scripts[i].src.indexOf('keycloak.min.js') !== -1) && scripts[i].src.indexOf('version=') !== -1) {
-                kc.iframeVersion = scripts[i].src.substring(scripts[i].src.indexOf('version=') + 8).split('&')[0];
-            }
-        }
-
         kc.init = function (initOptions) {
             kc.authenticated = false;
 
@@ -50,7 +43,7 @@
             } else if (initOptions && initOptions.adapter === 'default') {
                 adapter = loadAdapter();
             } else {
-                if (window.Cordova || window.cordova) {
+                if (window.Cordova) {
                     adapter = loadAdapter('cordova');
                 } else {
                     adapter = loadAdapter();
@@ -93,10 +86,6 @@
                             throw 'Invalid value for flow';
                     }
                     kc.flow = initOptions.flow;
-                }
-
-                if (initOptions.timeSkew != null) {
-                    kc.timeSkew = initOptions.timeSkew;
                 }
             }
 
@@ -159,14 +148,12 @@
                 var callback = parseCallback(window.location.href);
 
                 if (callback) {
-                    return setupCheckLoginIframe().success(function() {
-                        window.history.replaceState({}, null, callback.newUrl);
-                        processCallback(callback, initPromise);
-                    }).error(function (e) {
-                        initPromise.setError();
-                    });
+                    setupCheckLoginIframe();
+                    window.history.replaceState({}, null, callback.newUrl);
+                    processCallback(callback, initPromise);
+                    return;
                 } else if (initOptions) {
-                    if (initOptions.token && initOptions.refreshToken) {
+                    if (initOptions.refreshToken) {
                         setToken(initOptions.token, initOptions.refreshToken, initOptions.idToken);
 
                         if (loginIframe.enable) {
@@ -175,8 +162,12 @@
                                     kc.onAuthSuccess && kc.onAuthSuccess();
                                     initPromise.setSuccess();
                                 }).error(function () {
-                                    setToken(null, null, null);
-                                    initPromise.setSuccess();
+                                    kc.onAuthError && kc.onAuthError();
+                                    if (initOptions.onLoad) {
+                                        onLoad();
+                                    } else {
+                                        initPromise.setError();
+                                    }
                                 });
                             });
                         } else {
@@ -223,7 +214,7 @@
             var callbackState = {
                 state: state,
                 nonce: nonce,
-                redirectUri: encodeURIComponent(redirectUri)
+                redirectUri: encodeURIComponent(redirectUri),
             }
 
             if (options && options.prompt) {
@@ -376,11 +367,6 @@
         kc.isTokenExpired = function(minValidity) {
             if (!kc.tokenParsed || (!kc.refreshToken && kc.flow != 'implicit' )) {
                 throw 'Not authenticated';
-            }
-
-            if (kc.timeSkew == null) {
-                console.info('[KEYCLOAK] Unable to determine if token is expired as timeskew is not set');
-                return true;
             }
 
             var expiresIn = kc.tokenParsed['exp'] - Math.ceil(new Date().getTime() / 1000) + kc.timeSkew;
@@ -596,7 +582,7 @@
 
                 req.onreadystatechange = function () {
                     if (req.readyState == 4) {
-                        if (req.status == 200 || fileLoaded(req)) {
+                        if (req.status == 200) {
                             var config = JSON.parse(req.responseText);
 
                             kc.authServerUrl = config['auth-server-url'];
@@ -642,10 +628,6 @@
             return promise.promise;
         }
 
-        function fileLoaded(xhr) {
-            return xhr.status == 0 && xhr.responseText && xhr.responseURL.startsWith('file:');
-        }
-
         function setToken(token, refreshToken, idToken, timeLocal) {
             if (kc.tokenTimeoutHandle) {
                 clearTimeout(kc.tokenTimeoutHandle);
@@ -671,7 +653,12 @@
             if (token) {
                 kc.token = token;
                 kc.tokenParsed = decodeToken(token);
-                kc.sessionId = kc.tokenParsed.session_state;
+
+                var sessionId = kc.realm + '/' + kc.tokenParsed.sub;
+                if (kc.tokenParsed.session_state) {
+                    sessionId = sessionId + '/' + kc.tokenParsed.session_state;
+                }
+                kc.sessionId = sessionId;
                 kc.authenticated = true;
                 kc.subject = kc.tokenParsed.sub;
                 kc.realmAccess = kc.tokenParsed.realm_access;
@@ -679,9 +666,6 @@
 
                 if (timeLocal) {
                     kc.timeSkew = Math.floor(timeLocal / 1000) - kc.tokenParsed.iat;
-                }
-
-                if (kc.timeSkew != null) {
                     console.info('[KEYCLOAK] Estimated time difference between browser and server is ' + kc.timeSkew + ' seconds');
 
                     if (kc.onTokenExpired) {
@@ -693,7 +677,11 @@
                             kc.tokenTimeoutHandle = setTimeout(kc.onTokenExpired, expiresIn);
                         }
                     }
+                } else {
+                    kc.updateToken(-1);
                 }
+            } else if (refreshToken) {
+                kc.updateToken(-1);
             } else {
                 delete kc.token;
                 delete kc.tokenParsed;
@@ -772,43 +760,6 @@
         }
 
         function createPromise() {
-            if (typeof Promise === "function") {
-                return createNativePromise();
-            } else {
-                return createLegacyPromise();
-            }
-        }
-
-        function createNativePromise() {
-            // Need to create a native Promise which also preserves the
-            // interface of the custom promise type previously used by the API
-            var p = {
-                setSuccess: function(result) {
-                    p.success = true;
-                    p.resolve(result);
-                },
-
-                setError: function(result) {
-                    p.success = false;
-                    p.reject(result);
-                }
-            };
-            p.promise = new Promise(function(resolve, reject) {
-                p.resolve = resolve;
-                p.reject = reject;
-            });
-            p.promise.success = function(callback) {
-                p.promise.then(callback);
-                return p.promise;
-            }
-            p.promise.error = function(callback) {
-                p.promise.catch(callback);
-                return p.promise;
-            }
-            return p;
-        }
-
-        function createLegacyPromise() {
             var p = {
                 setSuccess: function(result) {
                     p.success = true;
@@ -877,26 +828,16 @@
             }
 
             var src = getRealmUrl() + '/protocol/openid-connect/login-status-iframe.html';
-            if (kc.iframeVersion) {
-                src = src + '?version=' + kc.iframeVersion;
-            }
-
             iframe.setAttribute('src', src );
-            iframe.setAttribute('title', 'keycloak-session-iframe' );
             iframe.style.display = 'none';
             document.body.appendChild(iframe);
 
             var messageCallback = function(event) {
-                if ((event.origin !== loginIframe.iframeOrigin) || (loginIframe.iframe.contentWindow !== event.source)) {
+                if (event.origin !== loginIframe.iframeOrigin) {
                     return;
                 }
 
-                if (!(event.data == 'unchanged' || event.data == 'changed' || event.data == 'error')) {
-                    return;
-                }
-
-
-                if (event.data != 'unchanged') {
+                if (event.data != "unchanged") {
                     kc.clearToken();
                 }
 
@@ -904,7 +845,7 @@
 
                 for (var i = callbacks.length - 1; i >= 0; --i) {
                     var promise = callbacks[i];
-                    if (event.data == 'unchanged') {
+                    if (event.data == "unchanged") {
                         promise.setSuccess();
                     } else {
                         promise.setError();
@@ -987,14 +928,7 @@
 
             if (type == 'cordova') {
                 loginIframe.enable = false;
-                var cordovaOpenWindowWrapper = function(loginUrl, target, options) {
-                    if (window.cordova && window.cordova.InAppBrowser) {
-                        // Use inappbrowser for IOS and Android if available
-                        return window.cordova.InAppBrowser.open(loginUrl, target, options);
-                    } else {
-                        return window.open(loginUrl, target, options);
-                    }
-                };
+
                 return {
                     login: function(options) {
                         var promise = createPromise();
@@ -1005,7 +939,8 @@
                         }
 
                         var loginUrl = kc.createLoginUrl(options);
-                        var ref = cordovaOpenWindowWrapper(loginUrl, '_blank', o);
+                        var ref = window.open(loginUrl, '_blank', o);
+
                         var completed = false;
 
                         ref.addEventListener('loadstart', function(event) {
@@ -1038,7 +973,7 @@
                         var promise = createPromise();
 
                         var logoutUrl = kc.createLogoutUrl(options);
-                        var ref = cordovaOpenWindowWrapper(logoutUrl, '_blank', 'location=no,hidden=yes');
+                        var ref = window.open(logoutUrl, '_blank', 'location=no,hidden=yes');
 
                         var error;
 
@@ -1071,7 +1006,7 @@
 
                     register : function() {
                         var registerUrl = kc.createRegisterUrl();
-                        var ref = cordovaOpenWindowWrapper(registerUrl, '_blank', 'location=no');
+                        var ref = window.open(registerUrl, '_blank', 'location=no');
                         ref.addEventListener('loadstart', function(event) {
                             if (event.url.indexOf('http://localhost') == 0) {
                                 ref.close();
@@ -1081,7 +1016,7 @@
 
                     accountManagement : function() {
                         var accountUrl = kc.createAccountUrl();
-                        var ref = cordovaOpenWindowWrapper(accountUrl, '_blank', 'location=no');
+                        var ref = window.open(accountUrl, '_blank', 'location=no');
                         ref.addEventListener('loadstart', function(event) {
                             if (event.url.indexOf('http://localhost') == 0) {
                                 ref.close();
@@ -1289,7 +1224,7 @@
                             break;
                         default:
                             if (responseMode != 'query' || !handleQueryParam(param, queryParams[param], oauth)) {
-                                oauth.newUrl += (oauth.newUrl.indexOf('?') == -1 ? '?' : '&') + param + '=' + encodeURIComponent(queryParams[param]);
+                                oauth.newUrl += (oauth.newUrl.indexOf('?') == -1 ? '?' : '&') + param + '=' + queryParams[param];
                             }
                             break;
                     }

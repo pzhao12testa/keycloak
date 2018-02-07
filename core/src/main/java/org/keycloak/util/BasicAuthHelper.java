@@ -54,10 +54,8 @@ public class BasicAuthHelper
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        int seperatorIndex = val.indexOf(":");
-        if(seperatorIndex == -1) return null;
-        String user = val.substring(0, seperatorIndex);
-        String pw = val.substring(seperatorIndex + 1);
-        return new String[]{user,pw};
+        String[] split = val.split(":");
+        if (split.length != 2) return null;
+        return split;
     }
 }

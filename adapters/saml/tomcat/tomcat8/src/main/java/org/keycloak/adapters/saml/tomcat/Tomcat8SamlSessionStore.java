@@ -24,7 +24,6 @@ import org.keycloak.adapters.saml.CatalinaSamlSessionStore;
 import org.keycloak.adapters.saml.SamlDeployment;
 import org.keycloak.adapters.spi.HttpFacade;
 import org.keycloak.adapters.spi.SessionIdMapper;
-import org.keycloak.adapters.spi.SessionIdMapperUpdater;
 import org.keycloak.adapters.tomcat.CatalinaUserSessionManagement;
 import org.keycloak.adapters.tomcat.GenericPrincipalFactory;
 
@@ -34,7 +33,7 @@ import org.keycloak.adapters.tomcat.GenericPrincipalFactory;
  */
 public class Tomcat8SamlSessionStore extends CatalinaSamlSessionStore {
     public Tomcat8SamlSessionStore(CatalinaUserSessionManagement sessionManagement, GenericPrincipalFactory principalFactory, SessionIdMapper idMapper, Request request, AbstractSamlAuthenticatorValve valve, HttpFacade facade, SamlDeployment deployment) {
-        super(sessionManagement, principalFactory, idMapper, SessionIdMapperUpdater.DIRECT, request, valve, facade, deployment);
+        super(sessionManagement, principalFactory, idMapper, request, valve, facade, deployment);
     }
 
     @Override

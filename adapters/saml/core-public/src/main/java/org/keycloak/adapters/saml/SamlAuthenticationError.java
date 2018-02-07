@@ -18,10 +18,7 @@
 package org.keycloak.adapters.saml;
 
 import org.keycloak.adapters.spi.AuthenticationError;
-import org.keycloak.dom.saml.v2.protocol.StatusCodeType;
 import org.keycloak.dom.saml.v2.protocol.StatusResponseType;
-import org.keycloak.saml.common.constants.JBossSAMLURIConstants;
-import java.util.Objects;
 
 /**
  * Object that describes the SAML error that happened.
@@ -30,7 +27,6 @@ import java.util.Objects;
  * @version $Revision: 1 $
  */
 public class SamlAuthenticationError implements AuthenticationError {
-
     public static enum Reason {
         EXTRACTION_FAILURE,
         INVALID_SIGNATURE,
@@ -63,18 +59,7 @@ public class SamlAuthenticationError implements AuthenticationError {
 
     @Override
     public String toString() {
-        return "SamlAuthenticationError [reason=" + reason + ", status=" 
-          + ((status == null || status.getStatus() == null) ? "UNKNOWN" : extractStatusCode(status.getStatus().getStatusCode()))
-          + "]";
+        return "SamlAuthenticationError [reason=" + reason + ", status=" + status + "]";
     }
     
-    private String extractStatusCode(StatusCodeType statusCode) {
-        if (statusCode == null || statusCode.getValue() == null) {
-            return "UNKNOWN";
-        }
-        if (Objects.equals(JBossSAMLURIConstants.STATUS_RESPONDER.get(), statusCode.getValue().toString())) {
-            return extractStatusCode(statusCode.getStatusCode());
-        }
-        return statusCode.getValue().toString();
-    }
 }

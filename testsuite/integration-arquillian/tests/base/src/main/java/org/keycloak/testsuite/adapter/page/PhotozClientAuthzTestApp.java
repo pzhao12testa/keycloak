@@ -32,7 +32,6 @@ import java.net.URL;
 
 import static org.keycloak.testsuite.util.WaitUtils.pause;
 import static org.keycloak.testsuite.util.WaitUtils.waitForPageToLoad;
-import static org.keycloak.testsuite.util.WaitUtils.waitUntilElement;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
@@ -93,39 +92,28 @@ public class PhotozClientAuthzTestApp extends AbstractPageWithInjectedUrl {
     }
 
     public void navigateToAdminAlbum() {
-        URLUtils.navigateToUri(toString() + "/#/admin/album", true);
+        URLUtils.navigateToUri(driver, toString() + "/#/admin/album", true);
         driver.navigate().refresh(); // This is sometimes necessary for loading the new policy settings
-        waitForPageToLoad();
+        waitForPageToLoad(driver);
         pause(WAIT_AFTER_OPERATION);
     }
 
     public void logOut() {
-        waitUntilElement(signOutButton); // Sometimes doesn't work in PhantomJS!
-        signOutButton.click();
+        signOutButton.click(); // Sometimes doesn't work in PhantomJS!
         pause(WAIT_AFTER_OPERATION);
     }
     
     public void requestEntitlement() {
         entitlement.click();
         pause(WAIT_AFTER_OPERATION);
-        pause(WAIT_AFTER_OPERATION);
     }
     
     public void requestEntitlements() {
         entitlements.click();
         pause(WAIT_AFTER_OPERATION);
-        pause(WAIT_AFTER_OPERATION);
     }
 
-    public void login(String username, String password, String... scopes) throws InterruptedException {
-        if (this.driver.getCurrentUrl().startsWith(getInjectedUrl().toString())) {
-            Thread.sleep(2000);
-            logOut();
-            navigateTo();
-        }
-
-        Thread.sleep(2000);
-
+    public void login(String username, String password, String... scopes) {
         if (scopes.length > 0) {
             StringBuilder scopesValue = new StringBuilder();
 
@@ -136,7 +124,7 @@ public class PhotozClientAuthzTestApp extends AbstractPageWithInjectedUrl {
                 scopesValue.append(scope);
             }
 
-            URLUtils.navigateToUri(this.driver.getCurrentUrl() + " " + scopesValue, true);
+            URLUtils.navigateToUri(driver, this.driver.getCurrentUrl() + " " + scopesValue, true);
         }
 
         this.loginPage.form().login(username, password);
@@ -155,20 +143,8 @@ public class PhotozClientAuthzTestApp extends AbstractPageWithInjectedUrl {
 
     public void viewAlbum(String name) throws InterruptedException {
         this.driver.findElement(By.xpath("//a[text() = '" + name + "']")).click();
-        waitForPageToLoad();
+        waitForPageToLoad(driver);
         driver.navigate().refresh(); // This is sometimes necessary for loading the new policy settings
-        pause(WAIT_AFTER_OPERATION);
-    }
-
-    public void requestResourceProtectedAnyScope() throws InterruptedException {
-        navigateTo();
-        this.driver.findElement(By.id("requestPathWithAnyProtectedScope")).click();
-        pause(WAIT_AFTER_OPERATION);
-    }
-
-    public void requestResourceProtectedAllScope() throws InterruptedException {
-        navigateTo();
-        this.driver.findElement(By.id("requestPathWithAllProtectedScope")).click();
         pause(WAIT_AFTER_OPERATION);
     }
 
@@ -184,6 +160,6 @@ public class PhotozClientAuthzTestApp extends AbstractPageWithInjectedUrl {
 
     @Override
     public boolean isCurrent() {
-        return URLUtils.currentUrlStartWith(toString());
+        return URLUtils.currentUrlStartWith(driver, toString());
     }
 }

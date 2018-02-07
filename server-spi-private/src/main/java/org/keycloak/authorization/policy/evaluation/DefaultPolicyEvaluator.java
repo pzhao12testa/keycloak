@@ -35,7 +35,6 @@ import org.keycloak.authorization.model.Scope;
 import org.keycloak.authorization.permission.ResourcePermission;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
 import org.keycloak.authorization.store.PolicyStore;
-import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.authorization.store.StoreFactory;
 import org.keycloak.representations.idm.authorization.PolicyEnforcementMode;
 
@@ -47,13 +46,11 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
     private final AuthorizationProvider authorization;
     private final StoreFactory storeFactory;
     private final PolicyStore policyStore;
-    private final ResourceStore resourceStore;
 
     public DefaultPolicyEvaluator(AuthorizationProvider authorization) {
         this.authorization = authorization;
         storeFactory = this.authorization.getStoreFactory();
         policyStore = storeFactory.getPolicyStore();
-        resourceStore = storeFactory.getResourceStore();
     }
 
     @Override
@@ -88,7 +85,7 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
             evaluatePolicies(() -> policyStore.findByScopeIds(scopes.stream().map(Scope::getId).collect(Collectors.toList()), resourceServer.getId()), consumer);
         }
 
-        if (PolicyEnforcementMode.PERMISSIVE.equals(enforcementMode) && !verified.get()) {
+        if (PolicyEnforcementMode.PERMISSIVE.equals(enforcementMode) && verified.get()) {
             createEvaluation(permission, executionContext, decision, null, null).grant();
         }
     }
@@ -162,10 +159,10 @@ public class DefaultPolicyEvaluator implements PolicyEvaluator {
                 String type = resource.getType();
 
                 if (type != null) {
-                    List<Resource> resourcesByType = resourceStore.findByType(type, resource.getResourceServer().getId());
+                    List<Resource> resourcesByType = authorization.getStoreFactory().getResourceStore().findByType(type, resource.getResourceServer().getId());
 
                     for (Resource resourceType : resourcesByType) {
-                        if (resourceType.getOwner().equals(resource.getResourceServer().getId())) {
+                        if (resourceType.getOwner().equals(resource.getResourceServer().getClientId())) {
                             resources.add(resourceType);
                         }
                     }

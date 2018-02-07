@@ -24,9 +24,7 @@ import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
 import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
-import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.util.AdminEventPaths;
-import org.keycloak.testsuite.util.AssertAdminEvents;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
@@ -47,16 +45,15 @@ public class FlowTest extends AbstractAuthenticationTest {
     // KEYCLOAK-3681: Delete top flow doesn't delete all subflows
     @Test
     public void testRemoveSubflows() {
-        createFlow(newFlow("Foo", "Foo flow", "generic", true, false));
+        authMgmtResource.createFlow(newFlow("Foo", "Foo flow", "generic", true, false));
         addFlowToParent("Foo", "child");
         addFlowToParent("child", "grandchild");
         
         List<AuthenticationFlowRepresentation> flows = authMgmtResource.getFlows();
         AuthenticationFlowRepresentation found = findFlowByAlias("Foo", flows);
         authMgmtResource.deleteFlow(found.getId());
-        assertAdminEvents.clear();
-
-        createFlow(newFlow("Foo", "Foo flow", "generic", true, false));
+        
+        authMgmtResource.createFlow(newFlow("Foo", "Foo flow", "generic", true, false));
         addFlowToParent("Foo", "child");
         
         // Under the old code, this would throw an error because "grandchild"

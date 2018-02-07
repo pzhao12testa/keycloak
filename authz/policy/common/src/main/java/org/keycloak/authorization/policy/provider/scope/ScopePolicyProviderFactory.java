@@ -2,17 +2,17 @@ package org.keycloak.authorization.policy.provider.scope;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.AuthorizationProvider;
-import org.keycloak.authorization.model.Policy;
+import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
+import org.keycloak.authorization.policy.provider.PolicyProviderAdminService;
 import org.keycloak.authorization.policy.provider.PolicyProviderFactory;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
-import org.keycloak.representations.idm.authorization.ScopePermissionRepresentation;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public class ScopePolicyProviderFactory implements PolicyProviderFactory<ScopePermissionRepresentation> {
+public class ScopePolicyProviderFactory implements PolicyProviderFactory {
 
     private ScopePolicyProvider provider = new ScopePolicyProvider();
 
@@ -32,18 +32,13 @@ public class ScopePolicyProviderFactory implements PolicyProviderFactory<ScopePe
     }
 
     @Override
-    public PolicyProvider create(KeycloakSession session) {
+    public PolicyProviderAdminService getAdminResource(ResourceServer resourceServer) {
         return null;
     }
 
     @Override
-    public Class<ScopePermissionRepresentation> getRepresentationType() {
-        return ScopePermissionRepresentation.class;
-    }
-
-    @Override
-    public ScopePermissionRepresentation toRepresentation(Policy policy) {
-        return new ScopePermissionRepresentation();
+    public PolicyProvider create(KeycloakSession session) {
+        return null;
     }
 
     @Override

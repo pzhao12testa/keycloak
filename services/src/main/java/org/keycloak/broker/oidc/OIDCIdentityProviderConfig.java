@@ -23,10 +23,9 @@ import org.keycloak.models.IdentityProviderModel;
  */
 public class OIDCIdentityProviderConfig extends OAuth2IdentityProviderConfig {
 
-    public static final String JWKS_URL = "jwksUrl";
+    private static final String JWKS_URL = "jwksUrl";
 
-    public static final String USE_JWKS_URL = "useJwksUrl";
-    public static final String VALIDATE_SIGNATURE = "validateSignature";
+    private static final String USE_JWKS_URL = "useJwksUrl";
 
 
     public OIDCIdentityProviderConfig(IdentityProviderModel identityProviderModel) {
@@ -74,7 +73,7 @@ public class OIDCIdentityProviderConfig extends OAuth2IdentityProviderConfig {
     }
 
     public void setValidateSignature(boolean validateSignature) {
-        getConfig().put(VALIDATE_SIGNATURE, String.valueOf(validateSignature));
+        getConfig().put("validateSignature", String.valueOf(validateSignature));
     }
 
     public boolean isUseJwksUrl() {

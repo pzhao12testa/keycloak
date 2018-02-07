@@ -22,6 +22,4 @@ org.keycloak.protocol.saml.installation.SamlSPDescriptorClientInstallation
 org.keycloak.protocol.saml.installation.SamlIDPDescriptorClientInstallation
 org.keycloak.protocol.saml.installation.ModAuthMellonClientInstallation
 org.keycloak.protocol.saml.installation.KeycloakSamlSubsystemInstallation
-org.keycloak.protocol.docker.installation.DockerVariableOverrideInstallationProvider
-org.keycloak.protocol.docker.installation.DockerRegistryConfigFileInstallationProvider
-org.keycloak.protocol.docker.installation.DockerComposeYamlInstallationProvider
+

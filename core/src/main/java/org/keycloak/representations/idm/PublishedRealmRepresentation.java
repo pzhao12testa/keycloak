@@ -39,6 +39,9 @@ public class PublishedRealmRepresentation {
     @JsonProperty("account-service")
     protected String accountServiceUrl;
 
+    @JsonProperty("admin-api")
+    protected String adminApiUrl;
+
     @JsonProperty("tokens-not-before")
     protected int notBefore;
 
@@ -96,6 +99,14 @@ public class PublishedRealmRepresentation {
 
     public void setAccountServiceUrl(String accountServiceUrl) {
         this.accountServiceUrl = accountServiceUrl;
+    }
+
+    public String getAdminApiUrl() {
+        return adminApiUrl;
+    }
+
+    public void setAdminApiUrl(String adminApiUrl) {
+        this.adminApiUrl = adminApiUrl;
     }
 
     public int getNotBefore() {

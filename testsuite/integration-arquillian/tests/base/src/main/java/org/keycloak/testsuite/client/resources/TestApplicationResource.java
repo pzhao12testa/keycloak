@@ -20,13 +20,13 @@ package org.keycloak.testsuite.client.resources;
 import org.keycloak.representations.adapters.action.LogoutAction;
 import org.keycloak.representations.adapters.action.PushNotBeforeAction;
 import org.keycloak.representations.adapters.action.TestAvailabilityAction;
-import org.keycloak.utils.MediaType;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -51,12 +51,7 @@ public interface TestApplicationResource {
 
     @POST
     @Path("/clear-admin-actions")
-    void clearAdminActions();
-
-    @GET
-    @Produces(MediaType.TEXT_HTML_UTF_8)
-    @Path("/get-account-profile")
-    String getAccountProfile(@QueryParam("token") String token, @QueryParam("account-uri") String accountUri);
+    Response clearAdminActions();
 
     @Path("/oidc-client-endpoints")
     TestOIDCEndpointsApplicationResource oidcClientEndpoints();

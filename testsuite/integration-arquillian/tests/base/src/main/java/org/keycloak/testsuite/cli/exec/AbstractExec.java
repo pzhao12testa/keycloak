@@ -14,7 +14,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:mstrukel@redhat.com">Marko Strukelj</a>
@@ -182,11 +181,7 @@ public abstract class AbstractExec {
     }
 
     public List<String> stderrLines() {
-        return filterAgentsOutput(parseStreamAsLines(new ByteArrayInputStream(stderr.toByteArray())));
-    }
-
-    public static List<String> filterAgentsOutput(List<String> lines) {
-        return lines.stream().filter(line -> !line.contains("JAVA_TOOL_OPTIONS")).collect(Collectors.toList());
+        return parseStreamAsLines(new ByteArrayInputStream(stderr.toByteArray()));
     }
 
     public String stderrString() {

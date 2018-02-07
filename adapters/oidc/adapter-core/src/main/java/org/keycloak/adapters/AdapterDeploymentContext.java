@@ -206,16 +206,6 @@ public class AdapterDeploymentContext {
         public void setBearerOnly(boolean bearerOnly) {
             delegate.setBearerOnly(bearerOnly);
         }
-        
-        @Override
-        public boolean isAutodetectBearerOnly() {
-            return delegate.isAutodetectBearerOnly();
-        }
-        
-        @Override
-        public void setAutodetectBearerOnly(boolean autodetectBearerOnly) {
-            delegate.setAutodetectBearerOnly(autodetectBearerOnly);
-        }
 
         @Override
         public boolean isEnableBasicAuth() {
@@ -285,16 +275,6 @@ public class AdapterDeploymentContext {
         @Override
         public void setSslRequired(SslRequired sslRequired) {
             delegate.setSslRequired(sslRequired);
-        }
-
-        @Override
-        public int getConfidentialPort() {
-            return delegate.getConfidentialPort();
-        }
-
-        @Override
-        public void setConfidentialPort(int confidentialPort) {
-            delegate.setConfidentialPort(confidentialPort);
         }
 
         @Override

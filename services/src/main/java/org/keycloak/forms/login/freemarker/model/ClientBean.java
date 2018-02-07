@@ -46,10 +46,6 @@ public class ClientBean {
         return client.getName();
     }
 
-    public String getDescription() {
-        return client.getDescription();
-    }
-
     public String getBaseUrl() {
         return ResolveRelative.resolveRelativeUri(requestUri, client.getRootUrl(), client.getBaseUrl());
     }

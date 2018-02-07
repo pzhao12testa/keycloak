@@ -18,10 +18,10 @@
 package org.keycloak.authentication;
 
 import org.keycloak.forms.login.LoginFormsProvider;
+import org.keycloak.models.ClientSessionModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.models.utils.FormMessage;
-import org.keycloak.sessions.AuthenticationSessionModel;
 
 import java.net.URI;
 
@@ -58,11 +58,11 @@ public interface AuthenticationFlowContext extends AbstractAuthenticationFlowCon
 
 
     /**
-     * AuthenticationSessionModel attached to this flow
+     * ClientSessionModel attached to this flow
      *
      * @return
      */
-    AuthenticationSessionModel getAuthenticationSession();
+    ClientSessionModel getClientSession();
 
     /**
      * Create a Freemarker form builder that presets the user, action URI, and a generated access code
@@ -74,25 +74,17 @@ public interface AuthenticationFlowContext extends AbstractAuthenticationFlowCon
     /**
      * Get the action URL for the required action.
      *
-     * @param code authentication session access code
+     * @param code client session access code
      * @return
      */
     URI getActionUrl(String code);
 
     /**
-     * Get the action URL for the action token executor.
-     *
-     * @param tokenString String representation (JWT) of action token
-     * @return
-     */
-    URI getActionTokenUrl(String tokenString);
-
-    /**
-     * Get the refresh URL for the required action.
+     * Get the action URL for the required action.  This auto-generates the access code.
      *
      * @return
      */
-    URI getRefreshExecutionUrl();
+    URI getActionUrl();
 
     /**
      * End the flow and redirect browser based on protocol specific respones.  This should only be executed
@@ -108,13 +100,7 @@ public interface AuthenticationFlowContext extends AbstractAuthenticationFlowCon
     void resetFlow();
 
     /**
-     * Reset the current flow to the beginning and restarts it. Allows to add additional listener, which is triggered after flow restarted
-     *
-     */
-    void resetFlow(Runnable afterResetListener);
-
-    /**
-     * Fork the current flow.  The authentication session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
+     * Fork the current flow.  The client session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
      * of this fork.  The previous flow will still be set at the current execution.  This is used by reset password when it sends an email.
      * It sends an email linking to the current flow and redirects the browser to a new browser login flow.
      *
@@ -125,7 +111,7 @@ public interface AuthenticationFlowContext extends AbstractAuthenticationFlowCon
     void fork();
 
     /**
-     * Fork the current flow.  The authentication session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
+     * Fork the current flow.  The client session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
      * of this fork.  The previous flow will still be set at the current execution.  This is used by reset password when it sends an email.
      * It sends an email linking to the current flow and redirects the browser to a new browser login flow.
      *
@@ -135,7 +121,7 @@ public interface AuthenticationFlowContext extends AbstractAuthenticationFlowCon
      */
     void forkWithSuccessMessage(FormMessage message);
     /**
-     * Fork the current flow.  The authentication session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
+     * Fork the current flow.  The client session will be cloned and set to point at the realm's browser login flow.  The Response will be the result
      * of this fork.  The previous flow will still be set at the current execution.  This is used by reset password when it sends an email.
      * It sends an email linking to the current flow and redirects the browser to a new browser login flow.
      *

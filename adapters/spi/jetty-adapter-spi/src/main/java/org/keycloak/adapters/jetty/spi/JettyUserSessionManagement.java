@@ -17,6 +17,7 @@
 
 package org.keycloak.adapters.jetty.spi;
 
+import org.eclipse.jetty.server.SessionManager;
 import org.jboss.logging.Logger;
 import org.keycloak.adapters.spi.UserSessionManagement;
 
@@ -29,9 +30,9 @@ import java.util.List;
  */
 public class JettyUserSessionManagement implements UserSessionManagement {
     private static final org.jboss.logging.Logger log = Logger.getLogger(JettyUserSessionManagement.class);
-    protected JettySessionManager sessionManager;
+    protected SessionManager sessionManager;
 
-    public JettyUserSessionManagement(JettySessionManager sessionManager) {
+    public JettyUserSessionManagement(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
     }
 

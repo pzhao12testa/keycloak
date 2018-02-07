@@ -48,7 +48,7 @@ public class LdapUserProviderForm extends Form {
     @FindBy(id = "ldapBindDn")
     private WebElement ldapBindDnInput;
 
-    @FindBy(id = "ldapBindCred")
+    @FindBy(id = "ldapBindCredential")
     private WebElement ldapBindCredentialInput;
 
     @FindBy(id = "customUserSearchFilter")

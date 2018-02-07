@@ -53,7 +53,6 @@ public class IdentityProviderRepresentation {
     protected boolean storeToken;
     protected boolean addReadTokenRoleOnCreate;
     protected boolean authenticateByDefault;
-    protected boolean linkOnly;
     protected String firstBrokerLoginFlowAlias;
     protected String postBrokerLoginFlowAlias;
     protected Map<String, String> config = new HashMap<String, String>();
@@ -96,14 +95,6 @@ public class IdentityProviderRepresentation {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public boolean isLinkOnly() {
-        return linkOnly;
-    }
-
-    public void setLinkOnly(boolean linkOnly) {
-        this.linkOnly = linkOnly;
     }
 
     /**

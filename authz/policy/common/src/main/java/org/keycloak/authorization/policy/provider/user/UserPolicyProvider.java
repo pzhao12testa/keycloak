@@ -17,34 +17,30 @@
  */
 package org.keycloak.authorization.policy.provider.user;
 
-import java.util.function.Function;
-
 import org.keycloak.authorization.model.Policy;
 import org.keycloak.authorization.policy.evaluation.Evaluation;
 import org.keycloak.authorization.policy.evaluation.EvaluationContext;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
-import org.keycloak.representations.idm.authorization.UserPolicyRepresentation;
+
+import static org.keycloak.authorization.policy.provider.user.UserPolicyProviderFactory.getUsers;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
 public class UserPolicyProvider implements PolicyProvider {
 
-    private final Function<Policy, UserPolicyRepresentation> representationFunction;
-
-    public UserPolicyProvider(Function<Policy, UserPolicyRepresentation> representationFunction) {
-        this.representationFunction = representationFunction;
-    }
-
     @Override
     public void evaluate(Evaluation evaluation) {
+        Policy policy = evaluation.getPolicy();
         EvaluationContext context = evaluation.getContext();
-        UserPolicyRepresentation representation = representationFunction.apply(evaluation.getPolicy());
+        String[] userIds = getUsers(policy);
 
-        for (String userId : representation.getUsers()) {
-            if (context.getIdentity().getId().equals(userId)) {
-                evaluation.grant();
-                break;
+        if (userIds.length > 0) {
+            for (String userId : userIds) {
+                if (context.getIdentity().getId().equals(userId)) {
+                    evaluation.grant();
+                    break;
+                }
             }
         }
     }

@@ -26,6 +26,8 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.ArrayList;
@@ -37,6 +39,10 @@ import java.util.Collection;
  */
 @Table(name="AUTHENTICATION_FLOW")
 @Entity
+@NamedQueries({
+        @NamedQuery(name="getAuthenticationFlowsByRealm", query="select flow from AuthenticationFlowEntity flow where flow.realm = :realm"),
+        @NamedQuery(name="deleteAuthenticationFlowByRealm", query="delete from AuthenticationFlowEntity flow where flow.realm = :realm")
+})
 public class AuthenticationFlowEntity {
     @Id
     @Column(name="ID", length = 36)

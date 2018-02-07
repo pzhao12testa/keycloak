@@ -27,16 +27,11 @@
     <xsl:param name="version" select="''"/>
     
     <xsl:variable name="newModuleDefinition">
-        <module xmlns="urn:jboss:module:1.1" name="test.jdbc.{$database}">
+        <module xmlns="urn:jboss:module:1.1" name="com.{$database}">
             <resources>
                 <resource-root path="{$database}-{$version}.jar"/>
             </resources>
             <dependencies>
-                <xsl:choose>
-                    <xsl:when test="contains($database, 'mssql')">
-                        <module name="javax.xml.bind.api"/>
-                    </xsl:when>
-                </xsl:choose>
                 <module name="javax.api"/>
                 <module name="javax.transaction.api"/>
             </dependencies>

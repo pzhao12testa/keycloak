@@ -26,7 +26,6 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
 import org.keycloak.provider.ProviderConfigProperty;
 import org.keycloak.representations.idm.UserFederationMapperSyncConfigRepresentation;
-import org.keycloak.storage.UserStorageProviderModel;
 
 import java.util.Collections;
 import java.util.List;
@@ -80,10 +79,6 @@ public interface LDAPStorageMapperFactory<T extends LDAPStorageMapper> extends S
 
     @Override
     default void validateConfiguration(KeycloakSession session, RealmModel realm, ComponentModel config) throws ComponentValidationException {
-
-    }
-
-    default void onParentUpdate(RealmModel realm, UserStorageProviderModel oldParent, UserStorageProviderModel newParent, ComponentModel mapperModel) {
 
     }
 

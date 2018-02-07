@@ -18,7 +18,6 @@
 package org.keycloak.testsuite.page;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
@@ -52,12 +51,6 @@ public class LoginPasswordUpdatePage {
 
     public boolean isCurrent() {
         return driver.getTitle().equals("Update password");
-    }
-
-    public void assertCurrent() {
-        String name = getClass().getSimpleName();
-        Assert.assertTrue("Expected " + name + " but was " + driver.getTitle() + " (" + driver.getCurrentUrl() + ")",
-                isCurrent());
     }
 
     public void open() {

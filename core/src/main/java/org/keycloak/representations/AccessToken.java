@@ -97,6 +97,9 @@ public class AccessToken extends IDToken {
         }
     }
 
+    @JsonProperty("client_session")
+    protected String clientSession;
+
     @JsonProperty("trusted-certs")
     protected Set<String> trustedCertificates;
 
@@ -153,12 +156,21 @@ public class AccessToken extends IDToken {
         return resourceAccess.get(resource);
     }
 
+    public String getClientSession() {
+        return clientSession;
+    }
+
     public Access addAccess(String service) {
         Access access = resourceAccess.get(service);
         if (access != null) return access;
         access = new Access();
         resourceAccess.put(service, access);
         return access;
+    }
+
+    public AccessToken clientSession(String session) {
+        this.clientSession = session;
+        return this;
     }
 
     @Override

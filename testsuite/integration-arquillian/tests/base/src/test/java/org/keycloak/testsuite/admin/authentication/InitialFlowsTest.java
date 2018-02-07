@@ -19,8 +19,6 @@ package org.keycloak.testsuite.admin.authentication;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.keycloak.models.utils.DefaultAuthenticationFlows;
-import org.keycloak.protocol.docker.DockerAuthenticator;
 import org.keycloak.representations.idm.AuthenticationExecutionExportRepresentation;
 import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
@@ -140,12 +138,10 @@ public class InitialFlowsTest extends AbstractAuthenticationTest {
         flow = newFlow("clients", "Base authentication for clients", "client-flow", true, true);
         addExecExport(flow, null, false, "client-secret", false, null, ALTERNATIVE, 10);
         addExecExport(flow, null, false, "client-jwt", false, null, ALTERNATIVE, 20);
-        addExecExport(flow, null, false, "client-secret-jwt", false, null, ALTERNATIVE, 30);
 
         execs = new LinkedList<>();
         addExecInfo(execs, "Client Id and Secret", "client-secret", false, 0, 0, ALTERNATIVE, null, new String[]{ALTERNATIVE, DISABLED});
         addExecInfo(execs, "Signed Jwt", "client-jwt", false, 0, 1, ALTERNATIVE, null, new String[]{ALTERNATIVE, DISABLED});
-        addExecInfo(execs, "Signed Jwt with Client Secret", "client-secret-jwt", false, 0, 2, ALTERNATIVE, null, new String[]{ALTERNATIVE, DISABLED});
         expected.add(new FlowExecutions(flow, execs));
 
         flow = newFlow("direct grant", "OpenID Connect Resource Owner Grant", "basic-flow", true, true);
@@ -157,13 +153,6 @@ public class InitialFlowsTest extends AbstractAuthenticationTest {
         addExecInfo(execs, "Username Validation", "direct-grant-validate-username", false, 0, 0, REQUIRED, null, new String[]{REQUIRED});
         addExecInfo(execs, "Password", "direct-grant-validate-password", false, 0, 1, REQUIRED, null, new String[]{REQUIRED, DISABLED});
         addExecInfo(execs, "OTP", "direct-grant-validate-otp", false, 0, 2, OPTIONAL, null, new String[]{REQUIRED, OPTIONAL, DISABLED});
-        expected.add(new FlowExecutions(flow, execs));
-
-        flow = newFlow("docker auth", "Used by Docker clients to authenticate against the IDP", "basic-flow", true, true);
-        addExecExport(flow, null, false, "docker-http-basic-authenticator", false, null, REQUIRED, 10);
-
-        execs = new LinkedList<>();
-        addExecInfo(execs, "Docker Authenticator", "docker-http-basic-authenticator", false, 0, 0, REQUIRED, null, new String[]{REQUIRED});
         expected.add(new FlowExecutions(flow, execs));
 
         flow = newFlow("first broker login", "Actions taken after first broker login with identity provider account, which is not yet linked to any Keycloak account",

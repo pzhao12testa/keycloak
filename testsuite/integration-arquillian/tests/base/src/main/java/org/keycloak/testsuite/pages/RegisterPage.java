@@ -54,9 +54,6 @@ public class RegisterPage extends AbstractPage {
     @FindBy(className = "instruction")
     private WebElement loginInstructionMessage;
 
-    @FindBy(linkText = "« Back to Login")
-    private WebElement backToLoginLink;
-
 
     public void register(String firstName, String lastName, String email, String username, String password, String passwordConfirm) {
         firstNameInput.clear();
@@ -126,10 +123,6 @@ public class RegisterPage extends AbstractPage {
         }
 
         submitButton.click();
-    }
-
-    public void clickBackToLogin() {
-        backToLoginLink.click();
     }
 
     public String getError() {

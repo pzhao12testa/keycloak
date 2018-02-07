@@ -17,7 +17,6 @@
 
 package org.keycloak.testsuite;
 
-import org.junit.After;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.common.util.reflections.Reflections;
 import org.keycloak.events.Details;
@@ -70,13 +69,6 @@ public abstract class AbstractTestRealmKeycloakTest extends AbstractKeycloakTest
         testRealms.add(testRealm);
 
         configureTestRealm(testRealm);
-    }
-
-
-    // Logout user after test
-    @After
-    public void deleteCookies() {
-        deleteAllCookiesForRealm("test");
     }
 
     /**

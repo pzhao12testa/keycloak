@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+/**
+ *
+ */
 package org.keycloak.common.util;
 
 import java.util.regex.Pattern;

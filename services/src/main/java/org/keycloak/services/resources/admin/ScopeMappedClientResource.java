@@ -29,7 +29,6 @@ import org.keycloak.models.ScopeContainerModel;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.ModelToRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -44,31 +43,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * @resource Scope Mappings
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class ScopeMappedClientResource {
     protected RealmModel realm;
-    protected AdminPermissionEvaluator auth;
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
+    private RealmAuth auth;
     protected ScopeContainerModel scopeContainer;
     protected KeycloakSession session;
     protected ClientModel scopedClient;
     protected AdminEventBuilder adminEvent;
     
-    public ScopeMappedClientResource(RealmModel realm, AdminPermissionEvaluator auth, ScopeContainerModel scopeContainer, KeycloakSession session, ClientModel scopedClient, AdminEventBuilder adminEvent,
-                                     AdminPermissionEvaluator.RequirePermissionCheck managePermission,
-                                     AdminPermissionEvaluator.RequirePermissionCheck viewPermission) {
+    public ScopeMappedClientResource(RealmModel realm, RealmAuth auth, ScopeContainerModel scopeContainer, KeycloakSession session, ClientModel scopedClient, AdminEventBuilder adminEvent) {
         this.realm = realm;
         this.auth = auth;
         this.scopeContainer = scopeContainer;
         this.session = session;
         this.scopedClient = scopedClient;
         this.adminEvent = adminEvent.resource(ResourceType.CLIENT_SCOPE_MAPPING);
-        this.managePermission = managePermission;
-        this.viewPermission = viewPermission;
     }
 
     /**
@@ -82,7 +74,11 @@ public class ScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getClientScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (scopeContainer == null) {
+            throw new NotFoundException("Could not find client");
+        }
 
         Set<RoleModel> mappings = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer); //scopedClient.getClientScopeMappings(client);
         List<RoleRepresentation> mapRep = new ArrayList<RoleRepresentation>();
@@ -104,10 +100,14 @@ public class ScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableClientScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (scopeContainer == null) {
+            throw new NotFoundException("Could not find client");
+        }
 
         Set<RoleModel> roles = scopedClient.getRoles();
-        return ScopeMappedResource.getAvailable(auth, scopeContainer, roles);
+        return ScopeMappedResource.getAvailable(scopeContainer, roles);
     }
 
     /**
@@ -122,7 +122,11 @@ public class ScopeMappedClientResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeClientScopeMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (scopeContainer == null) {
+            throw new NotFoundException("Could not find client");
+        }
 
         Set<RoleModel> roles = scopedClient.getRoles();
         return ScopeMappedResource.getComposite(scopeContainer, roles);
@@ -136,7 +140,11 @@ public class ScopeMappedClientResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addClientScopeMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
+
+        if (scopeContainer == null) {
+            throw new NotFoundException("Could not find client");
+        }
 
         for (RoleRepresentation role : roles) {
             RoleModel roleModel = scopedClient.getRole(role.getName());
@@ -157,7 +165,11 @@ public class ScopeMappedClientResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteClientScopeMapping(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
+
+        if (scopeContainer == null) {
+            throw new NotFoundException("Could not find client");
+        }
 
         if (roles == null) {
             Set<RoleModel> roleModels = KeycloakModelUtils.getClientScopeMappings(scopedClient, scopeContainer);//scopedClient.getClientScopeMappings(client);

@@ -30,7 +30,5 @@ import org.keycloak.provider.Provider;
 public interface BruteForceProtector extends Provider {
     void failedLogin(RealmModel realm, UserModel user, ClientConnection clientConnection);
 
-    void successfulLogin(RealmModel realm, UserModel user, ClientConnection clientConnection);
-
     boolean isTemporarilyDisabled(KeycloakSession session, RealmModel realm, UserModel user);
 }

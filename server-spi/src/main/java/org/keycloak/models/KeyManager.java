@@ -17,7 +17,7 @@
 
 package org.keycloak.models;
 
-import org.keycloak.keys.SecretKeyMetadata;
+import org.keycloak.keys.HmacKeyMetadata;
 import org.keycloak.keys.RsaKeyMetadata;
 
 import javax.crypto.SecretKey;
@@ -44,13 +44,7 @@ public interface KeyManager {
 
     SecretKey getHmacSecretKey(RealmModel realm, String kid);
 
-    List<SecretKeyMetadata> getHmacKeys(RealmModel realm, boolean includeDisabled);
-
-    ActiveAesKey getActiveAesKey(RealmModel realm);
-
-    SecretKey getAesSecretKey(RealmModel realm, String kid);
-
-    List<SecretKeyMetadata> getAesKeys(RealmModel realm, boolean includeDisabled);
+    List<HmacKeyMetadata> getHmacKeys(RealmModel realm, boolean includeDisabled);
 
     class ActiveRsaKey {
         private final String kid;
@@ -99,24 +93,5 @@ public interface KeyManager {
             return secretKey;
         }
     }
-
-    class ActiveAesKey {
-        private final String kid;
-        private final SecretKey secretKey;
-
-        public ActiveAesKey(String kid, SecretKey secretKey) {
-            this.kid = kid;
-            this.secretKey = secretKey;
-        }
-
-        public String getKid() {
-            return kid;
-        }
-
-        public SecretKey getSecretKey() {
-            return secretKey;
-        }
-    }
-
 
 }

@@ -20,13 +20,12 @@ package org.keycloak.services.resources.admin;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.keycloak.common.util.PemUtils;
 import org.keycloak.jose.jws.AlgorithmType;
-import org.keycloak.keys.SecretKeyMetadata;
+import org.keycloak.keys.HmacKeyMetadata;
 import org.keycloak.keys.RsaKeyMetadata;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeyManager;
 import org.keycloak.models.RealmModel;
 import org.keycloak.representations.idm.KeysMetadataRepresentation;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -37,16 +36,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @resource Key
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
 public class KeyResource {
 
     private RealmModel realm;
     private KeycloakSession session;
-    private AdminPermissionEvaluator auth;
+    private RealmAuth auth;
 
-    public KeyResource(RealmModel realm, KeycloakSession session, AdminPermissionEvaluator auth) {
+    public KeyResource(RealmModel realm, KeycloakSession session, RealmAuth auth) {
         this.realm = realm;
         this.session = session;
         this.auth = auth;
@@ -56,7 +54,7 @@ public class KeyResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public KeysMetadataRepresentation getKeyMetadata() {
-        auth.realm().requireViewRealm();
+        auth.requireView();
 
         KeyManager keystore = session.keys();
 
@@ -65,7 +63,6 @@ public class KeyResource {
         Map<String, String> active = new HashMap<>();
         active.put(AlgorithmType.RSA.name(), keystore.getActiveRsaKey(realm).getKid());
         active.put(AlgorithmType.HMAC.name(), keystore.getActiveHmacKey(realm).getKid());
-        active.put(AlgorithmType.AES.name(), keystore.getActiveAesKey(realm).getKid());
         keys.setActive(active);
 
         List<KeysMetadataRepresentation.KeyMetadataRepresentation> l = new LinkedList<>();
@@ -80,22 +77,13 @@ public class KeyResource {
             r.setCertificate(PemUtils.encodeCertificate(m.getCertificate()));
             l.add(r);
         }
-        for (SecretKeyMetadata m : session.keys().getHmacKeys(realm, true)) {
+        for (HmacKeyMetadata m : session.keys().getHmacKeys(realm, true)) {
             KeysMetadataRepresentation.KeyMetadataRepresentation r = new KeysMetadataRepresentation.KeyMetadataRepresentation();
             r.setProviderId(m.getProviderId());
             r.setProviderPriority(m.getProviderPriority());
             r.setKid(m.getKid());
             r.setStatus(m.getStatus() != null ? m.getStatus().name() : null);
             r.setType(AlgorithmType.HMAC.name());
-            l.add(r);
-        }
-        for (SecretKeyMetadata m : session.keys().getAesKeys(realm, true)) {
-            KeysMetadataRepresentation.KeyMetadataRepresentation r = new KeysMetadataRepresentation.KeyMetadataRepresentation();
-            r.setProviderId(m.getProviderId());
-            r.setProviderPriority(m.getProviderPriority());
-            r.setKid(m.getKid());
-            r.setStatus(m.getStatus() != null ? m.getStatus().name() : null);
-            r.setType(AlgorithmType.AES.name());
             l.add(r);
         }
 

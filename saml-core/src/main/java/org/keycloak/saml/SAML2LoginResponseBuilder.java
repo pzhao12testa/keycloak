@@ -21,9 +21,7 @@ import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.dom.saml.v2.assertion.AudienceRestrictionType;
 import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
 import org.keycloak.dom.saml.v2.assertion.ConditionsType;
-import org.keycloak.dom.saml.v2.assertion.OneTimeUseType;
 import org.keycloak.dom.saml.v2.assertion.SubjectConfirmationDataType;
-import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
 import org.keycloak.saml.common.PicketLinkLogger;
 import org.keycloak.saml.common.PicketLinkLoggerFactory;
@@ -43,6 +41,7 @@ import org.w3c.dom.Document;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import org.keycloak.dom.saml.v2.protocol.ExtensionsType;
 
 import static org.keycloak.saml.common.util.StringUtil.isNotNull;
 
@@ -69,7 +68,7 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
     protected String requestIssuer;
     protected String sessionIndex;
     protected final List<NodeGenerator> extensions = new LinkedList<>();
-    protected boolean includeOneTimeUseCondition;
+
 
     public SAML2LoginResponseBuilder sessionIndex(String sessionIndex) {
         this.sessionIndex = sessionIndex;
@@ -111,12 +110,12 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
     }
 
     public SAML2LoginResponseBuilder requestID(String requestID) {
-        this.requestID = requestID;
+        this.requestID =requestID;
         return this;
     }
 
     public SAML2LoginResponseBuilder requestIssuer(String requestIssuer) {
-        this.requestIssuer = requestIssuer;
+        this.requestIssuer =requestIssuer;
         return this;
     }
 
@@ -138,11 +137,6 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
 
     public SAML2LoginResponseBuilder disableAuthnStatement(boolean disableAuthnStatement) {
         this.disableAuthnStatement = disableAuthnStatement;
-        return this;
-    }
-
-    public SAML2LoginResponseBuilder includeOneTimeUseCondition(boolean includeOneTimeUseCondition) {
-        this.includeOneTimeUseCondition = includeOneTimeUseCondition;
         return this;
     }
 
@@ -223,11 +217,7 @@ public class SAML2LoginResponseBuilder implements SamlProtocolExtensionsAwareBui
             assertion.addStatement(authnStatement);
         }
 
-        if (includeOneTimeUseCondition) {
-            assertion.getConditions().addCondition(new OneTimeUseType());
-        }
-
-        if (!this.extensions.isEmpty()) {
+        if (! this.extensions.isEmpty()) {
             ExtensionsType extensionsType = new ExtensionsType();
             for (NodeGenerator extension : this.extensions) {
                 extensionsType.addExtension(extension);

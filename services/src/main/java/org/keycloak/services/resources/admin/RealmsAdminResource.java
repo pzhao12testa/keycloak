@@ -21,7 +21,6 @@ import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.NotFoundException;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.policy.PasswordPolicyNotMetException;
 import org.keycloak.models.AdminRoles;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.KeycloakSession;
@@ -35,8 +34,6 @@ import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resources.KeycloakApplication;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -57,7 +54,6 @@ import java.util.List;
 /**
  * Top level resource for Admin REST API
  *
- * @resource Realms Admin
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
@@ -97,11 +93,18 @@ public class RealmsAdminResource {
     @NoCache
     @Produces(MediaType.APPLICATION_JSON)
     public List<RealmRepresentation> getRealms() {
+        RealmManager realmManager = new RealmManager(session);
         List<RealmRepresentation> reps = new ArrayList<RealmRepresentation>();
-        List<RealmModel> realms = session.realms().getRealms();
-        for (RealmModel realm : realms) {
-            addRealmRep(reps, realm);
+        if (auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
+            List<RealmModel> realms = session.realms().getRealms();
+            for (RealmModel realm : realms) {
+                addRealmRep(reps, realm, realm.getMasterAdminClient());
+            }
+        } else {
+            ClientModel adminApp = auth.getRealm().getClientByClientId(realmManager.getRealmAdminClientId(auth.getRealm()));
+            addRealmRep(reps, auth.getRealm(), adminApp);
         }
+
         if (reps.isEmpty()) {
             throw new ForbiddenException();
         }
@@ -110,10 +113,10 @@ public class RealmsAdminResource {
         return reps;
     }
 
-    protected void addRealmRep(List<RealmRepresentation> reps, RealmModel realm) {
-        if (AdminPermissions.realms(session, auth).canView(realm)) {
+    protected void addRealmRep(List<RealmRepresentation> reps, RealmModel realm, ClientModel realmManagementClient) {
+        if (auth.hasAppRole(realmManagementClient, AdminRoles.VIEW_REALM)) {
             reps.add(ModelToRepresentation.toRepresentation(realm, false));
-        } else if (AdminPermissions.realms(session, auth).isAdmin(realm)) {
+        } else if (auth.hasOneOfAppRole(realmManagementClient, AdminRoles.ALL_REALM_ROLES)) {
             RealmRepresentation rep = new RealmRepresentation();
             rep.setRealm(realm.getName());
             reps.add(rep);
@@ -134,7 +137,12 @@ public class RealmsAdminResource {
     public Response importRealm(@Context final UriInfo uriInfo, final RealmRepresentation rep) {
         RealmManager realmManager = new RealmManager(session);
         realmManager.setContextPath(keycloak.getContextPath());
-        AdminPermissions.realms(session, auth).requireCreateRealm();
+        if (!auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
+            throw new ForbiddenException();
+        }
+        if (!auth.hasRealmRole(AdminRoles.CREATE_REALM)) {
+            throw new ForbiddenException();
+        }
 
         logger.debugv("importRealm: {0}", rep.getRealm());
 
@@ -147,12 +155,7 @@ public class RealmsAdminResource {
 
             return Response.created(location).build();
         } catch (ModelDuplicateException e) {
-            logger.error("Conflict detected", e);
-            return ErrorResponse.exists("Conflict detected. See logs for details");
-        } catch (PasswordPolicyNotMetException e) {
-            logger.error("Password policy not met for user " + e.getUsername(), e);
-            if (session.getTransactionManager().isActive()) session.getTransactionManager().setRollbackOnly();
-            return ErrorResponse.error("Password policy not met. See logs for details", Response.Status.BAD_REQUEST);
+            return ErrorResponse.exists("Realm with same name exists");
         }
     }
 
@@ -187,7 +190,13 @@ public class RealmsAdminResource {
                 && !auth.getRealm().equals(realm)) {
             throw new ForbiddenException();
         }
-        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, realm, auth);
+        RealmAuth realmAuth;
+
+        if (auth.getRealm().equals(realmManager.getKeycloakAdminstrationRealm())) {
+            realmAuth = new RealmAuth(auth, realm.getMasterAdminClient());
+        } else {
+            realmAuth = new RealmAuth(auth, realm.getClientByClientId(realmManager.getRealmAdminClientId(auth.getRealm())));
+        }
 
         AdminEventBuilder adminEvent = new AdminEventBuilder(realm, auth, session, clientConnection);
         session.getContext().setRealm(realm);

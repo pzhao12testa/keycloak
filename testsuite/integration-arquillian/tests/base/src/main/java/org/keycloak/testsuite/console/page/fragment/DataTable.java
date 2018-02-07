@@ -25,8 +25,6 @@ import org.openqa.selenium.support.FindBy;
 
 import java.util.List;
 
-import static org.keycloak.testsuite.util.UIUtils.clickLink;
-import static org.keycloak.testsuite.util.WaitUtils.pause;
 import static org.keycloak.testsuite.util.WaitUtils.waitForPageToLoad;
 import static org.openqa.selenium.By.xpath;
 
@@ -56,15 +54,17 @@ public class DataTable {
 
     public void search(String pattern) {
         searchInput.sendKeys(pattern);
-        clickLink(searchButton);
+        searchButton.click();
     }
 
     public void clickHeaderButton(String buttonText) {
-        clickLink(header.findElement(By.xpath(".//button[text()='" + buttonText + "']")));
+        header.findElement(By.xpath(".//button[text()='" + buttonText + "']")).click();
+        waitForPageToLoad(driver);
     }
 
     public void clickHeaderLink(String linkText) {
-        clickLink(header.findElement(By.linkText(linkText)));
+        header.findElement(By.linkText(linkText)).click();
+        waitForPageToLoad(driver);
     }
 
     public WebElement body() {
@@ -72,8 +72,6 @@ public class DataTable {
     }
 
     public List<WebElement> rows() {
-        waitForPageToLoad();
-        pause(500); // wait a bit to ensure the table is no more changing
         return rows;
     }
 
@@ -83,11 +81,11 @@ public class DataTable {
     }
 
     public void clickRowByLinkText(String text) {
-        clickLink(body.findElement(By.xpath(".//tr/td/a[text()='" + text + "']")));
+        body.findElement(By.xpath(".//tr/td/a[text()='" + text + "']")).click();
     }
 
     public void clickRowActionButton(WebElement row, String buttonText) {
-        clickLink(row.findElement(xpath(".//td[contains(@class, 'kc-action-cell') and text()='" + buttonText + "']")));
+        row.findElement(xpath(".//td[contains(@class, 'kc-action-cell') and text()='" + buttonText + "']")).click();
     }
     
 }

@@ -26,6 +26,7 @@ import org.keycloak.common.Profile;
 import org.keycloak.common.util.KeycloakUriBuilder;
 import org.keycloak.events.EventBuilder;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.Constants;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.protocol.LoginProtocol;
@@ -33,10 +34,8 @@ import org.keycloak.protocol.LoginProtocolFactory;
 import org.keycloak.services.clientregistration.ClientRegistrationService;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
-import org.keycloak.services.resources.account.AccountLoader;
 import org.keycloak.services.util.CacheControlUtil;
 import org.keycloak.services.util.ResolveRelative;
-import org.keycloak.utils.MediaTypeMatcher;
 import org.keycloak.utils.ProfileHelper;
 import org.keycloak.wellknown.WellKnownProvider;
 
@@ -207,10 +206,20 @@ public class RealmsResource {
     }
 
     @Path("{realm}/account")
-    public Object getAccountService(final @PathParam("realm") String name) {
+    public AccountService getAccountService(final @PathParam("realm") String name) {
         RealmModel realm = init(name);
+
+        ClientModel client = realm.getClientByClientId(Constants.ACCOUNT_MANAGEMENT_CLIENT_ID);
+        if (client == null || !client.isEnabled()) {
+            logger.debug("account management not enabled");
+            throw new NotFoundException("account management not enabled");
+        }
+
         EventBuilder event = new EventBuilder(realm, session, clientConnection);
-        return new AccountLoader().getAccountService(session, event);
+        AccountService accountService = new AccountService(realm, client, event);
+        ResteasyProviderFactory.getInstance().injectProperties(accountService);
+        accountService.init();
+        return accountService;
     }
 
     @Path("{realm}")
@@ -250,12 +259,8 @@ public class RealmsResource {
 
         WellKnownProvider wellKnown = session.getProvider(WellKnownProvider.class, providerName);
 
-        if (wellKnown != null) {
-            ResponseBuilder responseBuilder = Response.ok(wellKnown.getConfig()).cacheControl(CacheControlUtil.noCache());
-            return Cors.add(request, responseBuilder).allowedOrigins("*").auth().build();
-        }
-
-        throw new NotFoundException();
+        ResponseBuilder responseBuilder = Response.ok(wellKnown.getConfig()).cacheControl(CacheControlUtil.getDefaultCacheControl());
+        return Cors.add(request, responseBuilder).allowedOrigins("*").auth().build();
     }
 
     @Path("{realm}/authz")

@@ -31,7 +31,6 @@ import org.keycloak.common.util.StreamUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -53,13 +52,13 @@ class HttpUtil {
         this.auth = auth;
     }
 
-    InputStream doPost(String content, String contentType, Charset charset, String acceptType, String... path) throws ClientRegistrationException {
+    InputStream doPost(String content, String contentType, String acceptType, String... path) throws ClientRegistrationException {
         try {
             HttpPost request = new HttpPost(getUrl(baseUri, path));
 
-            request.setHeader(HttpHeaders.CONTENT_TYPE, contentType(contentType, charset));
+            request.setHeader(HttpHeaders.CONTENT_TYPE, contentType);
             request.setHeader(HttpHeaders.ACCEPT, acceptType);
-            request.setEntity(new StringEntity(content, charset));
+            request.setEntity(new StringEntity(content));
 
             addAuth(request);
 
@@ -77,10 +76,6 @@ class HttpUtil {
         } catch (IOException e) {
             throw new ClientRegistrationException("Failed to send request", e);
         }
-    }
-    
-    private String contentType(String contentType, Charset charset) {
-    	return contentType + ";charset=" + charset.name();
     }
 
     InputStream doGet(String acceptType, String... path) throws ClientRegistrationException {
@@ -110,13 +105,13 @@ class HttpUtil {
         }
     }
 
-    InputStream doPut(String content, String contentType, Charset charset, String acceptType, String... path) throws ClientRegistrationException {
+    InputStream doPut(String content, String contentType, String acceptType, String... path) throws ClientRegistrationException {
         try {
             HttpPut request = new HttpPut(getUrl(baseUri, path));
 
-            request.setHeader(HttpHeaders.CONTENT_TYPE, contentType(contentType, charset));
+            request.setHeader(HttpHeaders.CONTENT_TYPE, contentType);
             request.setHeader(HttpHeaders.ACCEPT, acceptType);
-            request.setEntity(new StringEntity(content, charset));
+            request.setEntity(new StringEntity(content));
 
             addAuth(request);
 

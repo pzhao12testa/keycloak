@@ -41,7 +41,4 @@ public class UpdateAccount extends Authenticate {
         submit();
     }
 
-    public AccountFields fields() {
-        return accountFields;
-    }
 }

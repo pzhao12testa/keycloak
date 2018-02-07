@@ -6,7 +6,7 @@
     ${msg("termsTitleHtml")}
     <#elseif section = "form">
     <div id="kc-terms-text">
-        ${msg("termsText")?no_esc}
+        ${msg("termsText")}
     </div>
     <form class="form-actions" action="${url.loginAction}" method="POST">
         <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonLargeClass!}" name="accept" id="kc-accept" type="submit" value="${msg("doAccept")}"/>

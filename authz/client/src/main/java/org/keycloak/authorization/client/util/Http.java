@@ -18,7 +18,6 @@
 package org.keycloak.authorization.client.util;
 
 import org.apache.http.client.methods.RequestBuilder;
-import org.keycloak.authorization.client.ClientAuthenticator;
 import org.keycloak.authorization.client.Configuration;
 import org.keycloak.authorization.client.representation.ServerConfiguration;
 
@@ -30,12 +29,10 @@ import java.net.URI;
 public class Http {
 
     private final Configuration configuration;
-    private final ClientAuthenticator authenticator;
     private ServerConfiguration serverConfiguration;
 
-    public Http(Configuration configuration, ClientAuthenticator authenticator) {
+    public Http(Configuration configuration) {
         this.configuration = configuration;
-        this.authenticator = authenticator;
     }
 
     public <R> HttpMethod<R> get(String path) {
@@ -63,7 +60,7 @@ public class Http {
     }
 
     private <R> HttpMethod<R> method(RequestBuilder builder) {
-        return new HttpMethod(this.configuration, authenticator, builder);
+        return new HttpMethod(this.configuration, builder);
     }
 
     public void setServerConfiguration(ServerConfiguration serverConfiguration) {

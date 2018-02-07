@@ -21,7 +21,6 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.junit.Test;
 import org.keycloak.adapters.authentication.ClientIdAndSecretCredentialsProvider;
 import org.keycloak.adapters.authentication.JWTClientCredentialsProvider;
-import org.keycloak.adapters.authentication.JWTClientSecretCredentialsProvider;
 import org.keycloak.adapters.rotation.HardcodedPublicKeyLocator;
 import org.keycloak.adapters.rotation.JWKPublicKeyLocator;
 import org.keycloak.common.enums.RelativeUrlsUsed;
@@ -30,13 +29,10 @@ import org.keycloak.common.util.PemUtils;
 import org.keycloak.enums.TokenStore;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
- * @author <a href="mailto:brad.culley@spartasystems.com">Brad Culley</a>
- * @author <a href="mailto:john.ament@spartasystems.com">John D. Ament</a>
  */
 public class KeycloakDeploymentBuilderTest {
 
@@ -57,12 +53,10 @@ public class KeycloakDeploymentBuilderTest {
         assertEquals(1000, deployment.getCorsMaxAge());
         assertEquals("POST, PUT, DELETE, GET", deployment.getCorsAllowedMethods());
         assertEquals("X-Custom, X-Custom2", deployment.getCorsAllowedHeaders());
-        assertEquals("X-Custom3, X-Custom4", deployment.getCorsExposedHeaders());
         assertTrue(deployment.isBearerOnly());
         assertTrue(deployment.isPublicClient());
         assertTrue(deployment.isEnableBasicAuth());
         assertTrue(deployment.isExposeToken());
-        assertFalse(deployment.isOAuthQueryParameterEnabled());
         assertEquals("234234-234234-234234", deployment.getResourceCredentials().get("secret"));
         assertEquals(ClientIdAndSecretCredentialsProvider.PROVIDER_ID, deployment.getClientAuthenticator().getId());
         assertEquals(20, ((ThreadSafeClientConnManager) deployment.getClient().getConnectionManager()).getMaxTotal());
@@ -76,7 +70,6 @@ public class KeycloakDeploymentBuilderTest {
         assertEquals(10, deployment.getTokenMinimumTimeToLive());
         assertEquals(20, deployment.getMinTimeBetweenJwksRequests());
         assertEquals(120, deployment.getPublicKeyCacheTtl());
-        assertEquals("/api/$1", deployment.getRedirectRewriteRules().get("^/wsmaster/api/(.*)$"));
     }
 
     @Test
@@ -95,9 +88,4 @@ public class KeycloakDeploymentBuilderTest {
         assertEquals(JWTClientCredentialsProvider.PROVIDER_ID, deployment.getClientAuthenticator().getId());
     }
 
-    @Test
-    public void loadSecretJwtCredentials() throws Exception {
-        KeycloakDeployment deployment = KeycloakDeploymentBuilder.build(getClass().getResourceAsStream("/keycloak-secret-jwt.json"));
-        assertEquals(JWTClientSecretCredentialsProvider.PROVIDER_ID, deployment.getClientAuthenticator().getId());
-    }
 }

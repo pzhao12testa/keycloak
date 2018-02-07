@@ -58,7 +58,8 @@ public class SAMLSloResponseParser extends SAMLStatusResponseTypeParser implemen
                 issuer.setValue(StaxParserUtil.getElementText(xmlEventReader));
                 response.setIssuer(issuer);
             } else if (JBossSAMLConstants.SIGNATURE.get().equals(elementName)) {
-                StaxParserUtil.bypassElementBlock(xmlEventReader, JBossSAMLConstants.SIGNATURE);
+                startElement = StaxParserUtil.getNextStartElement(xmlEventReader);
+                StaxParserUtil.bypassElementBlock(xmlEventReader, JBossSAMLConstants.SIGNATURE.get());
             } else if (JBossSAMLConstants.EXTENSIONS.get().equals(elementName)) {
                 SAMLExtensionsParser extensionsParser = new SAMLExtensionsParser();
                 response.setExtensions(extensionsParser.parse(xmlEventReader));
@@ -74,6 +75,6 @@ public class SAMLSloResponseParser extends SAMLStatusResponseTypeParser implemen
      */
     public boolean supports(QName qname) {
         return JBossSAMLURIConstants.PROTOCOL_NSURI.get().equals(qname.getNamespaceURI())
-                && LOGOUT_RESPONSE.get().equals(qname.getLocalPart());
+                && LOGOUT_RESPONSE.equals(qname.getLocalPart());
     }
 }

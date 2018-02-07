@@ -48,10 +48,6 @@ class KeycloakSubsystemAdd extends AbstractBoottimeAddStepHandler {
                         Phase.POST_MODULE, // PHASE
                         Phase.POST_MODULE_VALIDATOR_FACTORY - 1, // PRIORITY
                         chooseConfigDeploymentProcessor());
-                processorTarget.addDeploymentProcessor(KeycloakSamlExtension.SUBSYSTEM_NAME,
-                        Phase.POST_MODULE, // PHASE
-                        Phase.POST_MODULE_VALIDATOR_FACTORY - 1, // PRIORITY
-                        chooseClusteredSsoDeploymentProcessor());
             }
         }, OperationContext.Stage.RUNTIME);
     }
@@ -62,10 +58,6 @@ class KeycloakSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private DeploymentUnitProcessor chooseConfigDeploymentProcessor() {
         return new KeycloakAdapterConfigDeploymentProcessor();
-    }
-
-    private DeploymentUnitProcessor chooseClusteredSsoDeploymentProcessor() {
-        return new KeycloakClusteredSsoDeploymentProcessor();
     }
 
     @Override

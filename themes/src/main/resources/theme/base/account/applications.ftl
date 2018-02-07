@@ -7,9 +7,9 @@
         </div>
     </div>
 
-    <form action="${url.applicationsUrl}" method="post">
-        <input type="hidden" id="stateChecker" name="stateChecker" value="${stateChecker}">
-        <input type="hidden" id="referrer" name="referrer" value="${stateChecker}">
+    <form action="${url.revokeClientUrl}" method="post">
+        <input type="hidden" id="stateChecker" name="stateChecker" value="${stateChecker?html}">
+        <input type="hidden" id="referrer" name="referrer" value="${stateChecker?html}">
 
         <table class="table table-striped table-bordered">
             <thead>
@@ -27,9 +27,9 @@
               <#list applications.applications as application>
                 <tr>
                     <td>
-                        <#if application.effectiveUrl?has_content><a href="${application.effectiveUrl}"></#if>
+                        <#if application.client.baseUrl??><a href="${application.client.baseUrl}"></#if>
                             <#if application.client.name??>${advancedMsg(application.client.name)}<#else>${application.client.clientId}</#if>
-                        <#if application.effectiveUrl?has_content></a></#if>
+                        <#if application.client.baseUrl??></a></#if>
                     </td>
 
                     <td>

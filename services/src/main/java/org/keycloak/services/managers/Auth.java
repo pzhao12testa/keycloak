@@ -17,13 +17,12 @@
 
 package org.keycloak.services.managers;
 
-import org.keycloak.models.AuthenticatedClientSessionModel;
 import org.keycloak.models.ClientModel;
+import org.keycloak.models.ClientSessionModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.UserModel;
 import org.keycloak.models.UserSessionModel;
 import org.keycloak.representations.AccessToken;
-import org.keycloak.services.ForbiddenException;
 
 /**
 * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -36,7 +35,7 @@ public class Auth {
     private final UserModel user;
     private final ClientModel client;
     private final UserSessionModel session;
-    private AuthenticatedClientSessionModel clientSession;
+    private ClientSessionModel clientSession;
 
     public Auth(RealmModel realm, AccessToken token, UserModel user, ClientModel client, UserSessionModel session, boolean cookie) {
         this.cookie = cookie;
@@ -72,24 +71,12 @@ public class Auth {
         return session;
     }
 
-    public AuthenticatedClientSessionModel getClientSession() {
+    public ClientSessionModel getClientSession() {
         return clientSession;
     }
 
-    public void setClientSession(AuthenticatedClientSessionModel clientSession) {
+    public void setClientSession(ClientSessionModel clientSession) {
         this.clientSession = clientSession;
-    }
-
-    public void require(String role) {
-        if (!hasClientRole(client, role)) {
-            throw new ForbiddenException();
-        }
-    }
-
-    public void requireOneOf(String... roles) {
-        if (!hasOneOfAppRole(client, roles)) {
-            throw new ForbiddenException();
-        }
     }
 
     public boolean hasRealmRole(String role) {

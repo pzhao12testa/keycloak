@@ -34,42 +34,14 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
     @JsonIgnore
     private Map config = new HashMap();
 
-    /**
-     * Allow enabling of Keycloak Spring Boot adapter by configuration.
-     */
-    private boolean enabled = true;
-
     public Map getConfig() {
         return config;
     }
 
-    /**
-     * To provide Java EE security constraints
-     */
     private List<SecurityConstraint> securityConstraints = new ArrayList<SecurityConstraint>();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    /**
-     * This matches security-constraint of the servlet spec
-     */
-    @ConfigurationProperties()
     public static class SecurityConstraint {
-        /**
-         * A list of security collections
-         */
         private List<SecurityCollection> securityCollections = new ArrayList<SecurityCollection>();
-        private List<String> authRoles = new ArrayList<String>();
-
-        public List<String> getAuthRoles() {
-            return authRoles;
-        }
 
         public List<SecurityCollection> getSecurityCollections() {
             return securityCollections;
@@ -78,38 +50,19 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
         public void setSecurityCollections(List<SecurityCollection> securityCollections) {
             this.securityCollections = securityCollections;
         }
-
-        public void setAuthRoles(List<String> authRoles) {
-            this.authRoles = authRoles;
-        }
-
     }
 
-    /**
-     * This matches web-resource-collection of the servlet spec
-     */
-    @ConfigurationProperties()
     public static class SecurityCollection {
-        /**
-         * The name of your security constraint
-         */
         private String name;
-        /**
-         * The description of your security collection
-         */
         private String description;
-        /**
-         * A list of URL patterns that should match to apply the security collection
-         */
+        private List<String> authRoles = new ArrayList<String>();
         private List<String> patterns = new ArrayList<String>();
-        /**
-         * A list of HTTP methods that applies for this security collection
-         */
         private List<String> methods = new ArrayList<String>();
-        /**
-         * A list of HTTP methods that will be omitted for this security collection
-         */
         private List<String> omittedMethods = new ArrayList<String>();
+
+        public List<String> getAuthRoles() {
+            return authRoles;
+        }
 
         public List<String> getPatterns() {
             return patterns;
@@ -137,6 +90,10 @@ public class KeycloakSpringBootProperties extends AdapterConfig {
 
         public void setDescription(String description) {
             this.description = description;
+        }
+
+        public void setAuthRoles(List<String> authRoles) {
+            this.authRoles = authRoles;
         }
 
         public void setPatterns(List<String> patterns) {

@@ -111,8 +111,7 @@ public class ConfigTruststoreCmd extends AbstractAuthOptionsCmd {
                 "--truststore", trustStore,
                 "--keystore", keystore,
                 "--keypass", keyPass,
-                "--alias", alias,
-                "--no-config", booleanOptionForCheck(noconfig));
+                "--alias", alias);
 
         // now update the config
         processGlobalOptions();

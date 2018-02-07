@@ -88,6 +88,13 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
     @Before
     public void beforePhotozExampleAdapterTest() throws FileNotFoundException {
         deleteAllCookiesForClientPage();
+
+        for (PolicyRepresentation policy : getAuthorizationResource().policies().policies()) {
+            if ("Only Owner Policy".equals(policy.getName())) {
+                policy.getConfig().put("mavenArtifactVersion", System.getProperty("project.version"));
+                getAuthorizationResource().policies().policy(policy.getId()).update(policy);
+            }
+        }
     }
 
     @Override
@@ -136,7 +143,7 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
     }
 
     @Test
-    public void createAlbumWithInvalidUser() throws Exception {
+    public void createAlbumWithInvalidUser() {
         try {
             this.deployer.deploy(RESOURCE_SERVER_ID);
 
@@ -463,7 +470,6 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
 
             this.clientPage.createAlbum(resourceName);
 
-            this.clientPage.logOut();
             loginToClientPage("admin", "admin");
 
             this.clientPage.navigateToAdminAlbum();
@@ -623,7 +629,7 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
     
     //KEYCLOAK-3777
     @Test
-    public void testEntitlementRequest() throws Exception {
+    public void testEntitlementRequest() {
         try {
             this.deployer.deploy(RESOURCE_SERVER_ID);
             
@@ -642,28 +648,8 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
         }
     }
 
-    @Test
-    public void testResourceProtectedWithAnyScope() throws Exception {
-        try {
-            this.deployer.deploy(RESOURCE_SERVER_ID);
-            loginToClientPage("alice", "alice");
-            this.clientPage.requestResourceProtectedAllScope();
-            assertTrue(this.clientPage.wasDenied());
-            this.clientPage.requestResourceProtectedAnyScope();
-            assertFalse(this.clientPage.wasDenied());
-        } finally {
-            this.deployer.undeploy(RESOURCE_SERVER_ID);
-        }
-    }
-
     private void importResourceServerSettings() throws FileNotFoundException {
-        ResourceServerRepresentation authSettings = loadJson(new FileInputStream(new File(TEST_APPS_HOME_DIR + "/photoz/photoz-restful-api-authz-service.json")), ResourceServerRepresentation.class);
-
-        authSettings.getPolicies().stream()
-                .filter(x -> "Only Owner Policy".equals(x.getName()))
-                .forEach(x -> x.getConfig().put("mavenArtifactVersion", System.getProperty("project.version")));
-
-        getAuthorizationResource().importSettings(authSettings);
+        getAuthorizationResource().importSettings(loadJson(new FileInputStream(new File(TEST_APPS_HOME_DIR + "/photoz/photoz-restful-api-authz-service.json")), ResourceServerRepresentation.class));
     }
 
     private AuthorizationResource getAuthorizationResource() throws FileNotFoundException {
@@ -677,11 +663,13 @@ public abstract class AbstractPhotozExampleAdapterTest extends AbstractExampleAd
     }
 
     private void deleteAllCookiesForClientPage() {
+        clientPage.navigateTo();
         driver.manage().deleteAllCookies();
     }
-
-    private void loginToClientPage(String username, String password, String... scopes) throws InterruptedException {
+    
+    private void loginToClientPage(String username, String password, String... scopes) {
         // We need to log out by deleting cookies because the log out button sometimes doesn't work in PhantomJS
+        deleteAllCookiesForClientPage();
         deleteAllCookiesForTestRealm();
         clientPage.navigateTo();
         clientPage.login(username, password, scopes);

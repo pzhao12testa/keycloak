@@ -18,7 +18,6 @@
 package org.keycloak.admin.client.resource;
 
 import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -72,10 +71,5 @@ public interface RoleResource {
     @Path("composites")
     @Consumes(MediaType.APPLICATION_JSON)
     void deleteComposites(List<RoleRepresentation> rolesToRemove);
-    
-    @GET
-    @Path("users")
-    @Produces(MediaType.APPLICATION_JSON)
-    Set<UserRepresentation> getRoleUserMembers();
 
 }

@@ -39,7 +39,8 @@ public class P3PHelper {
 
     public static void addP3PHeader(KeycloakSession session) {
         try {
-            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            ThemeProvider themeProvider = session.getProvider(ThemeProvider.class, "extending");
+            Theme theme = themeProvider.getTheme(session.getContext().getRealm().getLoginTheme(), Theme.Type.LOGIN);
 
             Locale locale = LocaleHelper.getLocaleFromCookie(session);
             String p3pValue = theme.getMessages(locale).getProperty("p3pPolicy");

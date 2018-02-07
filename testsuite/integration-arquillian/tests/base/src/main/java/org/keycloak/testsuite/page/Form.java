@@ -25,7 +25,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
 import static org.jboss.arquillian.graphene.Graphene.guardAjax;
-import static org.keycloak.testsuite.util.UIUtils.clickLink;
 
 /**
  *
@@ -47,7 +46,8 @@ public class Form {
 
     public void save() {
 //        guardAjax(save).click();
-        clickLink(save);
+        save.click();
+        WaitUtils.waitForPageToLoad(driver);
     }
 
     public void cancel() {

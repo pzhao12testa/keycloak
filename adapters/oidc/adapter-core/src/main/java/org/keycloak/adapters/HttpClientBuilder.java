@@ -57,8 +57,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.params.CookiePolicy;
 
 /**
  * Abstraction for creating HttpClients. Allows SSL configuration.
@@ -172,8 +170,8 @@ public class HttpClientBuilder {
         return this;
     }
 
-    public HttpClientBuilder disableCookieCache(boolean disable) {
-        this.disableCookieCache = disable;
+    public HttpClientBuilder disableCookieCache() {
+        this.disableCookieCache = true;
         return this;
     }
 
@@ -291,7 +289,6 @@ public class HttpClientBuilder {
                 cm = new SingleClientConnManager(registry);
             }
             BasicHttpParams params = new BasicHttpParams();
-            params.setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
 
             if (proxyHost != null) {
                 params.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxyHost);
@@ -337,7 +334,7 @@ public class HttpClientBuilder {
     }
 
     public HttpClient build(AdapterHttpClientConfig adapterConfig) {
-        disableCookieCache(true); // disable cookie cache as we don't want sticky sessions for load balancing
+        disableCookieCache(); // disable cookie cache as we don't want sticky sessions for load balancing
 
         String truststorePath = adapterConfig.getTruststore();
         if (truststorePath != null) {

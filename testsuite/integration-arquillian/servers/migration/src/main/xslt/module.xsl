@@ -32,11 +32,6 @@
                 <resource-root path="{$database}-{$version}.jar"/>
             </resources>
             <dependencies>
-                <xsl:choose>
-                    <xsl:when test="contains($database, 'mssql')">
-                        <module name="javax.xml.bind.api"/>
-                    </xsl:when>
-                </xsl:choose>
                 <module name="javax.api"/>
                 <module name="javax.transaction.api"/>
             </dependencies>

@@ -19,7 +19,6 @@ package org.keycloak.services.resources.admin;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.annotations.cache.NoCache;
 import org.jboss.resteasy.spi.NotFoundException;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
@@ -34,7 +33,6 @@ import org.keycloak.representations.idm.ClientMappingsRepresentation;
 import org.keycloak.representations.idm.MappingsRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.services.ErrorResponseException;
-import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.managers.RealmManager;
 
 import javax.ws.rs.Consumes;
@@ -57,28 +55,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Base resource for managing users
  *
- * @resource Role Mapper
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
 public class RoleMapperResource {
-
     protected static final Logger logger = Logger.getLogger(RoleMapperResource.class);
 
     protected RealmModel realm;
 
+    private RealmAuth auth;
+
     private RoleMapperModel roleMapper;
 
     private AdminEventBuilder adminEvent;
-
-    protected AdminPermissionEvaluator.RequirePermissionCheck managePermission;
-    protected AdminPermissionEvaluator.RequirePermissionCheck viewPermission;
-    private AdminPermissionEvaluator auth;
 
     @Context
     protected ClientConnection clientConnection;
@@ -92,20 +85,14 @@ public class RoleMapperResource {
     @Context
     protected HttpHeaders headers;
 
-    public RoleMapperResource(RealmModel realm,
-                              AdminPermissionEvaluator auth,
-                              RoleMapperModel roleMapper,
-                              AdminEventBuilder adminEvent,
-                              AdminPermissionEvaluator.RequirePermissionCheck manageCheck,
-                              AdminPermissionEvaluator.RequirePermissionCheck viewCheck) {
+    public RoleMapperResource(RealmModel realm, RealmAuth auth,  RoleMapperModel roleMapper, AdminEventBuilder adminEvent) {
         this.auth = auth;
         this.realm = realm;
         this.adminEvent = adminEvent.resource(ResourceType.REALM_ROLE_MAPPING);
         this.roleMapper = roleMapper;
-        this.managePermission = manageCheck;
-        this.viewPermission = viewCheck;
 
     }
+
 
     /**
      * Get role mappings
@@ -116,7 +103,11 @@ public class RoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public MappingsRepresentation getRoleMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         MappingsRepresentation all = new MappingsRepresentation();
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
@@ -161,7 +152,11 @@ public class RoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getRealmRoleMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         Set<RoleModel> realmMappings = roleMapper.getRealmRoleMappings();
         List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
@@ -183,7 +178,11 @@ public class RoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getCompositeRealmRoleMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         Set<RoleModel> roles = realm.getRoles();
         List<RoleRepresentation> realmMappingsRep = new ArrayList<RoleRepresentation>();
@@ -205,13 +204,14 @@ public class RoleMapperResource {
     @Produces(MediaType.APPLICATION_JSON)
     @NoCache
     public List<RoleRepresentation> getAvailableRealmRoleMappings() {
-        viewPermission.require();
+        auth.requireView();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         Set<RoleModel> available = realm.getRoles();
-        Set<RoleModel> set = available.stream().filter(r ->
-            canMapRole(r)
-        ).collect(Collectors.toSet());
-        return ClientRoleMappingsResource.getAvailableRoles(roleMapper, set);
+        return ClientRoleMappingsResource.getAvailableRoles(roleMapper, available);
     }
 
     /**
@@ -223,7 +223,11 @@ public class RoleMapperResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void addRealmRoleMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         logger.debugv("** addRealmRoleMappings: {0}", roles);
 
@@ -232,7 +236,6 @@ public class RoleMapperResource {
             if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                 throw new NotFoundException("Role not found");
             }
-            auth.roles().requireMapRole(roleModel);
             roleMapper.grantRole(roleModel);
         }
 
@@ -248,7 +251,11 @@ public class RoleMapperResource {
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     public void deleteRealmRoleMappings(List<RoleRepresentation> roles) {
-        managePermission.require();
+        auth.requireManage();
+
+        if (roleMapper == null) {
+            throw new NotFoundException("User not found");
+        }
 
         logger.debug("deleteRealmRoleMappings");
         if (roles == null) {
@@ -256,7 +263,6 @@ public class RoleMapperResource {
             roles = new LinkedList<>();
 
             for (RoleModel roleModel : roleModels) {
-                auth.roles().requireMapRole(roleModel);
                 roleMapper.deleteRoleMapping(roleModel);
                 roles.add(ModelToRepresentation.toRepresentation(roleModel));
             }
@@ -267,11 +273,11 @@ public class RoleMapperResource {
                 if (roleModel == null || !roleModel.getId().equals(role.getId())) {
                     throw new NotFoundException("Role not found");
                 }
-                auth.roles().requireMapRole(roleModel);
+
                 try {
                     roleMapper.deleteRoleMapping(roleModel);
                 } catch (ModelException me) {
-                    Properties messages = AdminRoot.getMessages(session, realm, auth.adminAuth().getToken().getLocale());
+                    Properties messages = AdminRoot.getMessages(session, realm, auth.getAuth().getToken().getLocale());
                     throw new ErrorResponseException(me.getMessage(), MessageFormat.format(messages.getProperty(me.getMessage(), me.getMessage()), me.getParameters()),
                             Response.Status.BAD_REQUEST);
                 }
@@ -283,20 +289,10 @@ public class RoleMapperResource {
 
     }
 
-    private boolean canMapRole(RoleModel roleModel) {
-        return auth.roles().canMapRole(roleModel);
-    }
-
     @Path("clients/{client}")
     public ClientRoleMappingsResource getUserClientRoleMappingsResource(@PathParam("client") String client) {
         ClientModel clientModel = realm.getClientById(client);
-        if (clientModel == null) {
-            throw new NotFoundException("Client not found");
-        }
-        ClientRoleMappingsResource resource = new ClientRoleMappingsResource(uriInfo, session, realm, auth, roleMapper,
-                clientModel, adminEvent,
-                managePermission, viewPermission);
-        return resource;
+        return new ClientRoleMappingsResource(uriInfo, session, realm, auth, roleMapper, clientModel, adminEvent);
 
     }
 }

@@ -19,7 +19,6 @@ package org.keycloak.models;
 
 import org.keycloak.migration.MigrationModel;
 import org.keycloak.provider.Provider;
-import org.keycloak.storage.client.ClientLookupProvider;
 
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,7 @@ import java.util.Set;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public interface RealmProvider extends Provider, ClientProvider {
+public interface RealmProvider extends Provider {
 
     // Note: The reason there are so many query methods here is for layering a cache on top of an persistent KeycloakSession
     MigrationModel getMigrationModel();
@@ -41,15 +40,7 @@ public interface RealmProvider extends Provider, ClientProvider {
 
     List<GroupModel> getGroups(RealmModel realm);
 
-    Long getGroupsCount(RealmModel realm, Boolean onlyTopGroups);
-
-    Long getGroupsCountByNameContaining(RealmModel realm, String search);
-
     List<GroupModel> getTopLevelGroups(RealmModel realm);
-
-    List<GroupModel> getTopLevelGroups(RealmModel realm, Integer first, Integer max);
-
-    List searchForGroupByName(RealmModel realm, String search, Integer first, Integer max);
 
     boolean removeGroup(RealmModel realm, GroupModel group);
 
@@ -59,6 +50,15 @@ public interface RealmProvider extends Provider, ClientProvider {
 
     void addTopLevelGroup(RealmModel realm, GroupModel subGroup);
 
+    ClientModel addClient(RealmModel realm, String clientId);
+
+    ClientModel addClient(RealmModel realm, String id, String clientId);
+
+    List<ClientModel> getClients(RealmModel realm);
+
+    ClientModel getClientById(String id, RealmModel realm);
+    ClientModel getClientByClientId(String clientId, RealmModel realm);
+
 
     RoleModel addRealmRole(RealmModel realm, String name);
 
@@ -66,11 +66,21 @@ public interface RealmProvider extends Provider, ClientProvider {
 
     RoleModel getRealmRole(RealmModel realm, String name);
 
+    RoleModel addClientRole(RealmModel realm, ClientModel client, String name);
+
+    RoleModel addClientRole(RealmModel realm, ClientModel client, String id, String name);
+
     Set<RoleModel> getRealmRoles(RealmModel realm);
+
+    RoleModel getClientRole(RealmModel realm, ClientModel client, String name);
+
+    Set<RoleModel> getClientRoles(RealmModel realm, ClientModel client);
 
     boolean removeRole(RealmModel realm, RoleModel role);
 
     RoleModel getRoleById(String id, RealmModel realm);
+
+    boolean removeClient(String id, RealmModel realm);
 
     ClientTemplateModel getClientTemplateById(String id, RealmModel realm);
     GroupModel getGroupById(String id, RealmModel realm);
@@ -80,11 +90,4 @@ public interface RealmProvider extends Provider, ClientProvider {
     List<RealmModel> getRealms();
     boolean removeRealm(String id);
     void close();
-
-    ClientInitialAccessModel createClientInitialAccessModel(RealmModel realm, int expiration, int count);
-    ClientInitialAccessModel getClientInitialAccessModel(RealmModel realm, String id);
-    void removeClientInitialAccessModel(RealmModel realm, String id);
-    List<ClientInitialAccessModel> listClientInitialAccess(RealmModel realm);
-    void removeExpiredClientInitialAccess();
-    void decreaseRemainingCount(RealmModel realm, ClientInitialAccessModel clientInitialAccess); // Separate provider method to ensure we decrease remainingCount atomically instead of doing classic update
 }

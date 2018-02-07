@@ -71,13 +71,9 @@ public abstract class AbstractConsoleTest extends AbstractAuthTest {
         if (!testContext.isAdminLoggedIn()) {
             loginToMasterRealmAdminConsoleAs(adminUser);
             testContext.setAdminLoggedIn(true);
+        } else {
+//            adminConsoleRealmPage.navigateTo();
         }
-    }
-
-    // TODO: Fix the tests so this workaround is not necessary
-    @Override
-    protected boolean isImportAfterEachMethod() {
-        return true;
     }
 
     public void loginToMasterRealmAdminConsoleAs(UserRepresentation user) {

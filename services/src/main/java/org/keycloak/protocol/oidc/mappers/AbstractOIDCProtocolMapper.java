@@ -18,7 +18,7 @@
 package org.keycloak.protocol.oidc.mappers;
 
 import org.keycloak.Config;
-import org.keycloak.models.AuthenticatedClientSessionModel;
+import org.keycloak.models.ClientSessionModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.ProtocolMapperModel;
@@ -61,35 +61,35 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
     }
 
     public AccessToken transformUserInfoToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                              UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
+                                              UserSessionModel userSession, ClientSessionModel clientSession) {
 
         if (!OIDCAttributeMapperHelper.includeInUserInfo(mappingModel)) {
             return token;
         }
 
-        setClaim(token, mappingModel, userSession, session);
+        setClaim(token, mappingModel, userSession);
         return token;
     }
 
     public AccessToken transformAccessToken(AccessToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                            UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
+                                            UserSessionModel userSession, ClientSessionModel clientSession) {
 
         if (!OIDCAttributeMapperHelper.includeInAccessToken(mappingModel)){
             return token;
         }
 
-        setClaim(token, mappingModel, userSession, session);
+        setClaim(token, mappingModel, userSession);
         return token;
     }
 
     public IDToken transformIDToken(IDToken token, ProtocolMapperModel mappingModel, KeycloakSession session,
-                                    UserSessionModel userSession, AuthenticatedClientSessionModel clientSession) {
+                                    UserSessionModel userSession, ClientSessionModel clientSession) {
 
         if (!OIDCAttributeMapperHelper.includeInIDToken(mappingModel)){
             return token;
         }
 
-        setClaim(token, mappingModel, userSession, session);
+        setClaim(token, mappingModel, userSession);
         return token;
     }
 
@@ -98,22 +98,7 @@ public abstract class AbstractOIDCProtocolMapper implements ProtocolMapper {
      * @param token
      * @param mappingModel
      * @param userSession
-     *
-     * @deprecated override {@link #setClaim(IDToken, ProtocolMapperModel, UserSessionModel, KeycloakSession)} instead.
      */
-    @Deprecated
     protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession) {
-    }
-
-    /**
-     * Intended to be overridden in {@link ProtocolMapper} implementations to add claims to an token.
-     * @param token
-     * @param mappingModel
-     * @param userSession
-     * @param keycloakSession
-     */
-    protected void setClaim(IDToken token, ProtocolMapperModel mappingModel, UserSessionModel userSession, KeycloakSession keycloakSession) {
-        // we delegate to the old #setClaim(...) method for backwards compatibility
-        setClaim(token, mappingModel, userSession);
     }
 }

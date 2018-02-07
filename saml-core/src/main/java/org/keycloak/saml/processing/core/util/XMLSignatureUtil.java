@@ -367,9 +367,7 @@ public class XMLSignatureUtil {
     public static Document sign(Document doc, String keyName, KeyPair keyPair, String digestMethod, String signatureMethod, String referenceURI,
                                 X509Certificate x509Certificate, String canonicalizationMethodType)
             throws GeneralSecurityException, MarshalException, XMLSignatureException {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
-        }
+        logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
         PrivateKey signingKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
 
@@ -400,9 +398,7 @@ public class XMLSignatureUtil {
         String referenceURI = dto.getReferenceURI();
         String signatureMethod = dto.getSignatureMethod();
 
-        if (logger.isTraceEnabled()) {
-            logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
-        }
+        logger.trace("Document to be signed=" + DocumentUtil.asString(doc));
 
         PrivateKey signingKey = keyPair.getPrivate();
         PublicKey publicKey = keyPair.getPublic();
@@ -410,10 +406,6 @@ public class XMLSignatureUtil {
         DOMSignContext dsc = new DOMSignContext(signingKey, doc.getDocumentElement(), nextSibling);
 
         signImpl(dsc, digestMethod, signatureMethod, referenceURI, keyName, publicKey, dto.getX509Certificate(), canonicalizationMethodType);
-
-        if (logger.isTraceEnabled()) {
-            logger.trace("Signed document=" + DocumentUtil.asString(doc));
-        }
 
         return doc;
     }
@@ -476,7 +468,7 @@ public class XMLSignatureUtil {
         return true;
     }
 
-    public static boolean validateSingleNode(Node signatureNode, final KeyLocator locator) throws MarshalException, XMLSignatureException {
+    private static boolean validateSingleNode(Node signatureNode, final KeyLocator locator) throws MarshalException, XMLSignatureException {
         KeySelectorUtilizingKeyNameHint sel = new KeySelectorUtilizingKeyNameHint(locator);
         try {
             if (validateUsingKeySelector(signatureNode, sel)) {

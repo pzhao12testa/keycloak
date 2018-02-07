@@ -1,6 +1,16 @@
 Test with various databases
 ===========================
 
+MongoDB
+-------
+
+The Keycloak testsuite uses an embedded MongoDB when running tests so you don't have to have one running locally.  
+
+Run tests:
+
+    mvn install -Pmongo
+
+
 MySQL
 -----
 

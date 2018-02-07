@@ -27,78 +27,63 @@
 
     <fileSets>
         <fileSet>
-            <directory>target/${project.build.finalName}</directory>
-            <outputDirectory/>
-            <filtered>true</filtered>
+            <directory>${project.build.directory}/unpacked/keycloak-${project.version}/modules/system/layers/keycloak</directory>
+            <outputDirectory>modules/system/add-ons/keycloak</outputDirectory>
             <includes>
-                <include>**/module.xml</include>
+                <include>**/**</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>target/${project.build.finalName}</directory>
-            <outputDirectory/>
-            <filtered>false</filtered>
-            <excludes>
-                <exclude>.installation</exclude>
-                <exclude>docs/**</exclude>
-                <exclude>domain/**</exclude>
-                <exclude>standalone/**</exclude>
-                <exclude>bin/*.sh</exclude>
-                <exclude>module.xml</exclude>
-                <exclude>welcome-content/**</exclude>
-                <exclude>appclient/**</exclude>
-                <exclude>bin/appclient.*</exclude>
-                <exclude>copyright.txt</exclude>
-                <exclude>README.txt</exclude>
-                <exclude>version.txt</exclude>
-                <exclude>${profileExcludes}</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>target/${project.build.finalName}</directory>
-            <outputDirectory/>
+            <directory>${project.build.directory}/unpacked/keycloak-${project.version}/themes</directory>
+            <outputDirectory>themes</outputDirectory>
             <includes>
-                <include>bin/*.sh</include>
-            </includes>
-            <fileMode>0755</fileMode>
-        </fileSet>
-        <fileSet>
-            <directory>src/main/welcome-content</directory>
-            <outputDirectory>welcome-content</outputDirectory>
-            <includes>
-                <include>*.*</include>
+                <include>**/**</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>src/main/modules</directory>
-            <outputDirectory>modules</outputDirectory>
+            <directory>${project.build.directory}/unpacked/keycloak-${project.version}/providers</directory>
+            <outputDirectory>providers</outputDirectory>
             <includes>
-                <include>layers.conf</include>
+                <include>**/**</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>src/main</directory>
+            <directory>../../</directory>
+            <includes>
+                <include>License.html</include>
+            </includes>
             <outputDirectory></outputDirectory>
-            <includes>
-                <include>${readmeInclude}</include>
-            </includes>
-            <filtered>true</filtered>
         </fileSet>
         <fileSet>
-            <directory>target/cli</directory>
-            <outputDirectory>bin</outputDirectory>
+            <directory>${project.build.directory}/cli</directory>
             <includes>
                 <include>*.cli</include>
             </includes>
-            <filtered>true</filtered>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/unpacked/keycloak-${project.version}/bin</directory>
+            <includes>
+                <include>add-user-keycloak.*</include>
+                <include>federation-sssd-setup.sh</include>
+                <include>kcadm.*</include>
+                <include>kcreg.*</include>
+            </includes>
+            <outputDirectory>bin</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/unpacked/keycloak-${project.version}/bin/client</directory>
+            <includes>
+                <include>keycloak*</include>
+            </includes>
+            <outputDirectory>bin/client</outputDirectory>
         </fileSet>
     </fileSets>
 
     <files>
         <file>
-            <source>src/main/version.txt</source>
-            <outputDirectory/>
-            <filtered>true</filtered>
+            <source>target/README.txt</source>
+            <outputDirectory></outputDirectory>
         </file>
     </files>
 

@@ -23,7 +23,6 @@ import org.keycloak.models.UserModel;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -56,13 +55,9 @@ public class RegexPatternsPasswordPolicyProvider implements PasswordPolicyProvid
     @Override
     public Object parseConfig(String value) {
         if (value == null) {
-            throw new PasswordPolicyConfigException("Config required");
+            throw new IllegalArgumentException("Config required");
         }
-        try {
-            return Pattern.compile(value);
-        } catch (PatternSyntaxException e) {
-            throw new PasswordPolicyConfigException("Not a valid regular expression");
-        }
+        return Pattern.compile(value);
     }
 
     @Override

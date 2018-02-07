@@ -45,15 +45,10 @@ public class OIDCImplicitResponseTypeIDTokenTest extends AbstractOIDCResponseTyp
     }
 
 
-    @Override
-    protected boolean isFragment() {
-        return true;
-    }
-
-
-    protected List<IDToken> testAuthzResponseAndRetrieveIDTokens(OAuthClient.AuthorizationEndpointResponse authzResponse, EventRepresentation loginEvent) {
+    protected List<IDToken> retrieveIDTokens(EventRepresentation loginEvent) {
         Assert.assertEquals(OIDCResponseType.ID_TOKEN, loginEvent.getDetails().get(Details.RESPONSE_TYPE));
 
+        OAuthClient.AuthorizationEndpointResponse authzResponse = new OAuthClient.AuthorizationEndpointResponse(oauth, true);
         Assert.assertNull(authzResponse.getAccessToken());
         String idTokenStr = authzResponse.getIdToken();
         IDToken idToken = oauth.verifyIDToken(idTokenStr);

@@ -80,15 +80,7 @@ public class CatalinaHttpFacade implements HttpFacade {
 
         @Override
         public String getRelativePath() {
-            String uri = request.getRequestURI();
-            String contextPath = request.getContextPath();
-            String servletPath = uri.substring(uri.indexOf(contextPath) + contextPath.length());
-
-            if ("".equals(servletPath)) {
-                servletPath = "/";
-            }
-
-            return servletPath;
+            return request.getServletPath();
         }
 
         @Override

@@ -19,9 +19,6 @@ package org.keycloak.adapters.springsecurity.facade;
 
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.OIDCHttpFacade;
-import org.keycloak.adapters.spi.KeycloakAccount;
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
@@ -60,8 +57,7 @@ public class SimpleHttpFacade implements OIDCHttpFacade {
         SecurityContext context = SecurityContextHolder.getContext();
 
         if (context != null && context.getAuthentication() != null) {
-            KeycloakAuthenticationToken authentication = (KeycloakAuthenticationToken) context.getAuthentication();
-            return authentication.getAccount().getKeycloakSecurityContext();
+            return (KeycloakSecurityContext) context.getAuthentication().getDetails();
         }
 
         return null;

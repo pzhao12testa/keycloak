@@ -105,11 +105,6 @@ public class LDAPConfig {
         return vendor != null && vendor.equals(LDAPConstants.VENDOR_ACTIVE_DIRECTORY);
     }
 
-    public boolean isValidatePasswordPolicy() {
-        String validatePPolicy = config.getFirst(LDAPConstants.VALIDATE_PASSWORD_POLICY);
-        return Boolean.parseBoolean(validatePPolicy);
-    }
-
     public String getConnectionPooling() {
         return config.getFirst(LDAPConstants.CONNECTION_POOLING);
     }
@@ -142,7 +137,7 @@ public class LDAPConfig {
 
         return uuidAttrName;
     }
-
+    
     public boolean isObjectGUID() {
         return getUuidLDAPAttributeName().equalsIgnoreCase(LDAPConstants.OBJECT_GUID);
     }

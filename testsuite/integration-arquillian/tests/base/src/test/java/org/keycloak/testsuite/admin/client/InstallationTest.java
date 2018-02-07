@@ -19,10 +19,8 @@ package org.keycloak.testsuite.admin.client;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.keycloak.admin.client.resource.ClientResource;
-import org.keycloak.testsuite.ProfileAssume;
 import org.keycloak.testsuite.admin.ApiUtil;
 import org.keycloak.testsuite.arquillian.AuthServerTestEnricher;
 
@@ -54,9 +52,11 @@ public class InstallationTest extends AbstractClientTest {
     public void createClients() {
         oidcClientId = createOidcClient(OIDC_NAME);
         oidcBearerOnlyClientId = createOidcBearerOnlyClient(OIDC_NAME_BEARER_ONLY_NAME);
+        oidcBearerOnlyClientWithAuthzId = createOidcBearerOnlyClientWithAuthz(OIDC_NAME_BEARER_ONLY_WITH_AUTHZ_NAME);
 
         oidcClient = findClientResource(OIDC_NAME);
         oidcBearerOnlyClient = findClientResource(OIDC_NAME_BEARER_ONLY_NAME);
+        oidcBearerOnlyClientWithAuthz = findClientResource(OIDC_NAME_BEARER_ONLY_WITH_AUTHZ_NAME);
 
         samlClientId = createSamlClient(SAML_NAME);
         samlClient = findClientResource(SAML_NAME);
@@ -66,6 +66,7 @@ public class InstallationTest extends AbstractClientTest {
     public void tearDown() {
         removeClient(oidcClientId);
         removeClient(oidcBearerOnlyClientId);
+        removeClient(oidcBearerOnlyClientWithAuthzId);
         removeClient(samlClientId);
     }
 
@@ -74,7 +75,7 @@ public class InstallationTest extends AbstractClientTest {
     }
 
     private String samlUrl() {
-        return authServerUrl() + "/realms/test/protocol/saml";
+        return authServerUrl() + "/realms/master/protocol/saml";
     }
 
     @Test
@@ -101,23 +102,16 @@ public class InstallationTest extends AbstractClientTest {
 
     @Test
     public void testOidcBearerOnlyWithAuthzJson() {
-        ProfileAssume.assumePreview();
-
-        oidcBearerOnlyClientWithAuthzId = createOidcBearerOnlyClientWithAuthz(OIDC_NAME_BEARER_ONLY_WITH_AUTHZ_NAME);
-        oidcBearerOnlyClientWithAuthz = findClientResource(OIDC_NAME_BEARER_ONLY_WITH_AUTHZ_NAME);
-
         String json = oidcBearerOnlyClientWithAuthz.getInstallationProvider("keycloak-oidc-keycloak-json");
         assertOidcInstallationConfig(json);
         assertThat(json, containsString("bearer-only"));
         assertThat(json, not(containsString("public-client")));
         assertThat(json, containsString("credentials"));
         assertThat(json, containsString("secret"));
-
-        removeClient(oidcBearerOnlyClientWithAuthzId);
     }
 
     private void assertOidcInstallationConfig(String config) {
-        assertThat(config, containsString("test"));
+        assertThat(config, containsString("master"));
         assertThat(config, not(containsString(ApiUtil.findActiveKey(testRealmResource()).getPublicKey())));
         assertThat(config, containsString(authServerUrl()));
     }

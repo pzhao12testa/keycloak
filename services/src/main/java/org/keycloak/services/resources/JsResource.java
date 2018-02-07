@@ -17,18 +17,14 @@
 
 package org.keycloak.services.resources;
 
-import org.jboss.resteasy.spi.HttpRequest;
+import org.keycloak.Config;
 import org.keycloak.common.Version;
-import org.keycloak.services.util.CacheControlUtil;
-import org.keycloak.utils.MediaType;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
@@ -40,9 +36,6 @@ import java.io.InputStream;
 @Path("/js")
 public class JsResource {
 
-    @Context
-    private HttpRequest request;
-
     /**
      * Get keycloak.js file for javascript clients
      *
@@ -50,30 +43,38 @@ public class JsResource {
      */
     @GET
     @Path("/keycloak.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
-    public Response getKeycloakJs(@QueryParam("version") String version) {
-        return getJs("keycloak.js", version);
+    @Produces("text/javascript")
+    public Response getKeycloakJs() {
+        return getJs("keycloak.js");
     }
 
     @GET
     @Path("/{version}/keycloak.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
+    @Produces("text/javascript")
     public Response getKeycloakJsWithVersion(@PathParam("version") String version) {
-        return getJs("keycloak.js", version);
+        if (!version.equals(Version.RESOURCES_VERSION)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return getKeycloakJs();
     }
 
     @GET
     @Path("/keycloak.min.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
-    public Response getKeycloakMinJs(@QueryParam("version") String version) {
-        return getJs("keycloak.min.js", version);
+    @Produces("text/javascript")
+    public Response getKeycloakMinJs() {
+        return getJs("keycloak.min.js");
     }
 
     @GET
     @Path("/{version}/keycloak.min.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
+    @Produces("text/javascript")
     public Response getKeycloakMinJsWithVersion(@PathParam("version") String version) {
-        return getJs("keycloak.min.js", version);
+        if (!version.equals(Version.RESOURCES_VERSION)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return getKeycloakMinJs();
     }
 
     /**
@@ -83,50 +84,50 @@ public class JsResource {
      */
     @GET
     @Path("/keycloak-authz.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
-    public Response getKeycloakAuthzJs(@QueryParam("version") String version) {
-        return getJs("keycloak-authz.js", version);
+    @Produces("text/javascript")
+    public Response getKeycloakAuthzJs() {
+        return getJs("keycloak-authz.js");
     }
 
     @GET
     @Path("/{version}/keycloak-authz.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
+    @Produces("text/javascript")
     public Response getKeycloakAuthzJsWithVersion(@PathParam("version") String version) {
-        return getJs("keycloak-authz.js", version);
+        if (!version.equals(Version.RESOURCES_VERSION)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        return getKeycloakAuthzJs();
     }
 
     @GET
     @Path("/keycloak-authz.min.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
-    public Response getKeycloakAuthzMinJs(@QueryParam("version") String version) {
-        return getJs("keycloak-authz.min.js", version);
+    @Produces("text/javascript")
+    public Response getKeycloakAuthzMinJs() {
+        return getJs("keycloak-authz.min.js");
     }
 
     @GET
     @Path("/{version}/keycloak-authz.min.js")
-    @Produces(MediaType.TEXT_PLAIN_JAVASCRIPT)
+    @Produces("text/javascript")
     public Response getKeycloakAuthzMinJsWithVersion(@PathParam("version") String version) {
-        return getJs("keycloak-authz.min.js", version);
-    }
-
-    private Response getJs(String name, String version) {
-        CacheControl cacheControl;
-        if (version != null) {
-            if (!version.equals(Version.RESOURCES_VERSION)) {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            }
-            cacheControl = CacheControlUtil.getDefaultCacheControl();
-        } else {
-            cacheControl = CacheControlUtil.noCache();
+        if (!version.equals(Version.RESOURCES_VERSION)) {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
-        Cors cors = Cors.add(request).allowAllOrigins();
+        return getKeycloakAuthzMinJs();
+    }
 
+    private Response getJs(String name) {
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(name);
         if (inputStream != null) {
-            return cors.builder(Response.ok(inputStream).type("text/javascript").cacheControl(cacheControl)).build();
+            CacheControl cacheControl = new CacheControl();
+            cacheControl.setNoTransform(false);
+            cacheControl.setMaxAge(Config.scope("theme").getInt("staticMaxAge", -1));
+
+            return Response.ok(inputStream).type("text/javascript").cacheControl(cacheControl).build();
         } else {
-            return cors.builder(Response.status(Response.Status.NOT_FOUND)).build();
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
     }
 }

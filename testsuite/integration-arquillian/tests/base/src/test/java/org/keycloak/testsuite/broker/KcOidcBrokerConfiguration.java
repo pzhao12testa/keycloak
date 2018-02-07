@@ -105,12 +105,7 @@ public class KcOidcBrokerConfiguration implements BrokerConfiguration {
         IdentityProviderRepresentation idp = createIdentityProvider(IDP_OIDC_ALIAS, IDP_OIDC_PROVIDER_ID);
 
         Map<String, String> config = idp.getConfig();
-        applyDefaultConfiguration(suiteContext, config);
 
-        return idp;
-    }
-
-    protected void applyDefaultConfiguration(final SuiteContext suiteContext, final Map<String, String> config) {
         config.put("clientId", CLIENT_ID);
         config.put("clientSecret", CLIENT_SECRET);
         config.put("prompt", "login");
@@ -120,6 +115,8 @@ public class KcOidcBrokerConfiguration implements BrokerConfiguration {
         config.put("userInfoUrl", getAuthRoot(suiteContext) + "/auth/realms/" + REALM_PROV_NAME + "/protocol/openid-connect/userinfo");
         config.put("defaultScope", "email profile");
         config.put("backchannelSupported", "true");
+
+        return idp;
     }
 
     @Override

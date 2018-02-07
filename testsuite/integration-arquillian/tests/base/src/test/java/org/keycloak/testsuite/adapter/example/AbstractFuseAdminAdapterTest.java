@@ -78,7 +78,7 @@ public abstract class AbstractFuseAdminAdapterTest extends AbstractExampleAdapte
         assertCurrentUrlDoesntStartWith(hawtioPage);
 
         testRealmLoginPage.form().login("root", "password");
-        assertCurrentUrlStartsWith(hawtioPage.toString() + "/welcome", hawtioPage.getDriver());
+        assertCurrentUrlStartsWith(hawtioPage.getDriver(), hawtioPage.toString() + "/welcome");
         hawtioPage.logout();
         assertCurrentUrlStartsWith(testRealmLoginPage);
         
@@ -205,7 +205,7 @@ public abstract class AbstractFuseAdminAdapterTest extends AbstractExampleAdapte
         pipe.write("logout\n".getBytes());
         pipe.flush();
 
-        channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), TimeUnit.SECONDS.toMillis(15L));
+        channel.waitFor(EnumSet.of(ClientChannelEvent.CLOSED), 0);
         session.close(true);
         client.stop();
 

@@ -21,7 +21,6 @@ import org.keycloak.broker.provider.DefaultDataMarshaller;
 import org.keycloak.dom.saml.v2.assertion.AssertionType;
 import org.keycloak.dom.saml.v2.assertion.AuthnStatementType;
 import org.keycloak.dom.saml.v2.protocol.ResponseType;
-import org.keycloak.saml.common.constants.GeneralConstants;
 import org.keycloak.saml.common.exceptions.ParsingException;
 import org.keycloak.saml.common.exceptions.ProcessingException;
 import org.keycloak.saml.common.util.StaxUtil;
@@ -51,11 +50,11 @@ public class SAMLDataMarshaller extends DefaultDataMarshaller {
                 if (obj instanceof ResponseType) {
                     ResponseType responseType = (ResponseType) obj;
                     SAMLResponseWriter samlWriter = new SAMLResponseWriter(StaxUtil.getXMLStreamWriter(bos));
-                    samlWriter.write(responseType, true);
+                    samlWriter.write(responseType);
                 } else if (obj instanceof AssertionType) {
                     AssertionType assertion = (AssertionType) obj;
                     SAMLAssertionWriter samlWriter = new SAMLAssertionWriter(StaxUtil.getXMLStreamWriter(bos));
-                    samlWriter.write(assertion, true);
+                    samlWriter.write(assertion);
                 } else if (obj instanceof AuthnStatementType) {
                     AuthnStatementType authnStatement = (AuthnStatementType) obj;
                     SAMLAssertionWriter samlWriter = new SAMLAssertionWriter(StaxUtil.getXMLStreamWriter(bos));
@@ -67,7 +66,7 @@ public class SAMLDataMarshaller extends DefaultDataMarshaller {
                 throw new RuntimeException(pe);
             }
 
-            return new String(bos.toByteArray(), GeneralConstants.SAML_CHARSET);
+            return new String(bos.toByteArray());
         } else {
             return super.serialize(obj);
         }
@@ -80,12 +79,12 @@ public class SAMLDataMarshaller extends DefaultDataMarshaller {
 
             try {
                 if (clazz.equals(ResponseType.class) || clazz.equals(AssertionType.class)) {
-                    byte[] bytes = xmlString.getBytes(GeneralConstants.SAML_CHARSET);
+                    byte[] bytes = xmlString.getBytes();
                     InputStream is = new ByteArrayInputStream(bytes);
                     Object respType = new SAMLParser().parse(is);
                     return clazz.cast(respType);
                 } else if (clazz.equals(AuthnStatementType.class)) {
-                    byte[] bytes = xmlString.getBytes(GeneralConstants.SAML_CHARSET);
+                    byte[] bytes = xmlString.getBytes();
                     InputStream is = new ByteArrayInputStream(bytes);
                     XMLEventReader xmlEventReader = new SAMLParser().createEventReader(is);
                     AuthnStatementType authnStatement = SAMLParserUtil.parseAuthnStatement(xmlEventReader);

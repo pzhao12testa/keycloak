@@ -139,7 +139,7 @@ public class OIDCClientRegistrationTest extends AbstractClientRegistrationTest {
 
         OIDCClientRepresentation rep = reg.oidc().get(response.getClientId());
         assertNotNull(rep);
-        assertEquals(response.getRegistrationAccessToken(), rep.getRegistrationAccessToken());
+        assertNotEquals(response.getRegistrationAccessToken(), rep.getRegistrationAccessToken());
         assertTrue(CollectionUtil.collectionEquals(Arrays.asList("code", "none"), response.getResponseTypes()));
         assertTrue(CollectionUtil.collectionEquals(Arrays.asList(OAuth2Constants.AUTHORIZATION_CODE, OAuth2Constants.REFRESH_TOKEN), response.getGrantTypes()));
         assertNotNull(response.getClientSecret());

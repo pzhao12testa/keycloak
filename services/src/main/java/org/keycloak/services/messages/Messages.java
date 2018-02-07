@@ -33,12 +33,6 @@ public class Messages {
 
     public static final String EXPIRED_CODE = "expiredCodeMessage";
 
-    public static final String EXPIRED_ACTION = "expiredActionMessage";
-
-    public static final String EXPIRED_ACTION_TOKEN_NO_SESSION = "expiredActionTokenNoSessionMessage";
-
-    public static final String EXPIRED_ACTION_TOKEN_SESSION_EXISTS = "expiredActionTokenSessionExistsMessage";
-
     public static final String MISSING_FIRST_NAME = "missingFirstNameMessage";
 
     public static final String MISSING_LAST_NAME = "missingLastNameMessage";
@@ -76,8 +70,6 @@ public class Messages {
     public static final String CONFIGURE_TOTP = "configureTotpMessage";
 
     public static final String UPDATE_PROFILE = "updateProfileMessage";
-
-    public static final String RESET_PASSWORD = "resetPasswordMessage";
 
     public static final String UPDATE_PASSWORD = "updatePasswordMessage";
 
@@ -162,12 +154,6 @@ public class Messages {
 
     public static final String IDENTITY_PROVIDER_LINK_SUCCESS = "identityProviderLinkSuccess";
 
-    public static final String CONFIRM_ACCOUNT_LINKING = "confirmAccountLinking";
-
-    public static final String CONFIRM_EMAIL_ADDRESS_VERIFICATION = "confirmEmailAddressVerification";
-
-    public static final String CONFIRM_EXECUTION_OF_ACTIONS = "confirmExecutionOfActions";
-
     public static final String STALE_CODE = "staleCodeMessage";
 
     public static final String STALE_CODE_ACCOUNT = "staleCodeAccountMessage";
@@ -177,8 +163,6 @@ public class Messages {
     public static final String REALM_SUPPORTS_NO_CREDENTIALS = "realmSupportsNoCredentialsMessage";
 
     public static final String READ_ONLY_USER = "readOnlyUserMessage";
-
-    public static final String READ_ONLY_USERNAME = "readOnlyUsernameMessage";
 
     public static final String READ_ONLY_PASSWORD = "readOnlyPasswordMessage";
 
@@ -213,15 +197,5 @@ public class Messages {
     public static final String FAILED_LOGOUT = "failedLogout";
 
     public static final String CONSENT_DENIED="consentDenied";
-
     public static final String ALREADY_LOGGED_IN="alreadyLoggedIn";
-
-    public static final String DIFFERENT_USER_AUTHENTICATED = "differentUserAuthenticated";
-
-    public static final String BROKER_LINKING_SESSION_EXPIRED = "brokerLinkingSessionExpired";
-
-    public static final String PAGE_NOT_FOUND = "pageNotFound";
-
-    public static final String INTERNAL_SERVER_ERROR = "internalServerError";
-
 }

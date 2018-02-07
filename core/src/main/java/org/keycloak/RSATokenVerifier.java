@@ -29,10 +29,10 @@ import java.security.PublicKey;
  */
 public class RSATokenVerifier {
 
-    private final TokenVerifier<AccessToken> tokenVerifier;
+    private TokenVerifier tokenVerifier;
 
     private RSATokenVerifier(String tokenString) {
-        this.tokenVerifier = TokenVerifier.create(tokenString, AccessToken.class).withDefaultChecks();
+        this.tokenVerifier = TokenVerifier.create(tokenString);
     }
 
     public static RSATokenVerifier create(String tokenString) {

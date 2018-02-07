@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
  */
-public interface HmacKeyProviderFactory extends KeyProviderFactory<HmacKeyProvider> {
+public interface HmacKeyProviderFactory extends KeyProviderFactory {
 
     @Override
     default Map<String, Object> getTypeMetadata() {

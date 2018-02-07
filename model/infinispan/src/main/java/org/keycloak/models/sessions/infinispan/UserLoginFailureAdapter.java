@@ -17,8 +17,8 @@
 
 package org.keycloak.models.sessions.infinispan;
 
+import org.infinispan.Cache;
 import org.keycloak.models.UserLoginFailureModel;
-import org.keycloak.models.sessions.infinispan.changes.LoginFailuresUpdateTask;
 import org.keycloak.models.sessions.infinispan.entities.LoginFailureEntity;
 import org.keycloak.models.sessions.infinispan.entities.LoginFailureKey;
 
@@ -28,11 +28,13 @@ import org.keycloak.models.sessions.infinispan.entities.LoginFailureKey;
 public class UserLoginFailureAdapter implements UserLoginFailureModel {
 
     private InfinispanUserSessionProvider provider;
+    private Cache<LoginFailureKey, LoginFailureEntity> cache;
     private LoginFailureKey key;
     private LoginFailureEntity entity;
 
-    public UserLoginFailureAdapter(InfinispanUserSessionProvider provider, LoginFailureKey key, LoginFailureEntity entity) {
+    public UserLoginFailureAdapter(InfinispanUserSessionProvider provider, Cache<LoginFailureKey, LoginFailureEntity> cache, LoginFailureKey key, LoginFailureEntity entity) {
         this.provider = provider;
+        this.cache = cache;
         this.key = key;
         this.entity = entity;
     }
@@ -49,16 +51,8 @@ public class UserLoginFailureAdapter implements UserLoginFailureModel {
 
     @Override
     public void setFailedLoginNotBefore(int notBefore) {
-        LoginFailuresUpdateTask task = new LoginFailuresUpdateTask() {
-
-            @Override
-            public void runUpdate(LoginFailureEntity entity) {
-                entity.setFailedLoginNotBefore(notBefore);
-            }
-
-        };
-
-        update(task);
+        entity.setFailedLoginNotBefore(notBefore);
+        update();
     }
 
     @Override
@@ -68,30 +62,14 @@ public class UserLoginFailureAdapter implements UserLoginFailureModel {
 
     @Override
     public void incrementFailures() {
-        LoginFailuresUpdateTask task = new LoginFailuresUpdateTask() {
-
-            @Override
-            public void runUpdate(LoginFailureEntity entity) {
-                entity.setNumFailures(entity.getNumFailures() + 1);
-            }
-
-        };
-
-        update(task);
+        entity.setNumFailures(getNumFailures() + 1);
+        update();
     }
 
     @Override
     public void clearFailures() {
-        LoginFailuresUpdateTask task = new LoginFailuresUpdateTask() {
-
-            @Override
-            public void runUpdate(LoginFailureEntity entity) {
-                entity.clearFailures();
-            }
-
-        };
-
-        update(task);
+        entity.clearFailures();
+        update();
     }
 
     @Override
@@ -101,16 +79,8 @@ public class UserLoginFailureAdapter implements UserLoginFailureModel {
 
     @Override
     public void setLastFailure(long lastFailure) {
-        LoginFailuresUpdateTask task = new LoginFailuresUpdateTask() {
-
-            @Override
-            public void runUpdate(LoginFailureEntity entity) {
-                entity.setLastFailure(lastFailure);
-            }
-
-        };
-
-        update(task);
+        entity.setLastFailure(lastFailure);
+        update();
     }
 
     @Override
@@ -120,20 +90,12 @@ public class UserLoginFailureAdapter implements UserLoginFailureModel {
 
     @Override
     public void setLastIPFailure(String ip) {
-        LoginFailuresUpdateTask task = new LoginFailuresUpdateTask() {
-
-            @Override
-            public void runUpdate(LoginFailureEntity entity) {
-                entity.setLastIPFailure(ip);
-            }
-
-        };
-
-        update(task);
+        entity.setLastIPFailure(ip);
+        update();
     }
 
-    void update(LoginFailuresUpdateTask task) {
-        provider.getLoginFailuresTx().addTask(key, task);
+    void update() {
+        provider.getTx().replace(cache, key, entity);
     }
 
 }

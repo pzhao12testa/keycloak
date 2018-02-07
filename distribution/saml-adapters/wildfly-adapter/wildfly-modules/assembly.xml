@@ -25,19 +25,15 @@
 
     <fileSets>
         <fileSet>
-            <directory>src/main/resources/licenses/${product.slot}</directory>
-            <outputDirectory>licenses</outputDirectory>
-            <excludes>
-                <exclude>licenses.xml</exclude>
-            </excludes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}/licenses</directory>
-            <outputDirectory>licenses</outputDirectory>
+            <directory>../../</directory>
+            <includes>
+                <include>License.html</include>
+            </includes>
+            <outputDirectory></outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/modules</directory>
-            <outputDirectory>modules</outputDirectory>
+            <outputDirectory></outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

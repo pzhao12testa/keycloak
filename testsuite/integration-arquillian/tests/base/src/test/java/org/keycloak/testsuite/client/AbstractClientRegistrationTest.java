@@ -108,9 +108,9 @@ public abstract class AbstractClientRegistrationTest extends AbstractKeycloakTes
         return response;
     }
 
-    public ClientRepresentation getClient(String clientUuid) {
+    public ClientRepresentation getClient(String clientId) {
         try {
-            return adminClient.realm(REALM_NAME).clients().get(clientUuid).toRepresentation();
+            return adminClient.realm(REALM_NAME).clients().get(clientId).toRepresentation();
         } catch (NotFoundException e) {
             return null;
         }

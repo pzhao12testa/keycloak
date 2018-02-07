@@ -22,6 +22,7 @@ import org.keycloak.services.resource.RealmResourceProvider;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -40,7 +41,7 @@ public class HelloResourceProvider implements RealmResourceProvider {
     }
 
     @GET
-    @Produces("text/plain; charset=utf-8")
+    @Produces(MediaType.TEXT_PLAIN)
     public String get() {
         String name = session.getContext().getRealm().getDisplayName();
         if (name == null) {

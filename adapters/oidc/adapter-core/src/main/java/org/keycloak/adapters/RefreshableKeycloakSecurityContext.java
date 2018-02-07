@@ -155,9 +155,7 @@ public class RefreshableKeycloakSecurityContext extends KeycloakSecurityContext 
             this.refreshToken = response.getRefreshToken();
         }
         this.tokenString = tokenString;
-        if (tokenStore != null) {
-            tokenStore.refreshCallback(this);
-        }
+        tokenStore.refreshCallback(this);
         return true;
     }
 

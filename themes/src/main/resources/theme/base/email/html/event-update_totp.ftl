@@ -1,5 +1,5 @@
 <html>
 <body>
-${msg("eventUpdateTotpBodyHtml",event.date, event.ipAddress)?no_esc}
+${msg("eventUpdateTotpBodyHtml",event.date, event.ipAddress)}
 </body>
 </html>

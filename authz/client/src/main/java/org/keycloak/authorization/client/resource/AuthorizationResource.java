@@ -18,11 +18,11 @@
 package org.keycloak.authorization.client.resource;
 
 
-import static org.keycloak.authorization.client.util.Throwables.handleAndWrapException;
-
+import org.keycloak.authorization.client.AuthorizationDeniedException;
 import org.keycloak.authorization.client.representation.AuthorizationRequest;
 import org.keycloak.authorization.client.representation.AuthorizationResponse;
 import org.keycloak.authorization.client.util.Http;
+import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.util.JsonSerialization;
 
 /**
@@ -44,8 +44,13 @@ public class AuthorizationResource {
                     .authorizationBearer(this.accessToken)
                     .json(JsonSerialization.writeValueAsBytes(request))
                     .response().json(AuthorizationResponse.class).execute();
-        } catch (Exception cause) {
-            throw handleAndWrapException("Failed to obtain authorization data", cause);
+        } catch (HttpResponseException e) {
+            if (403 == e.getStatusCode()) {
+                throw new AuthorizationDeniedException(e);
+            }
+            throw new RuntimeException("Failed to obtain authorization data.", e);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to obtain authorization data.", e);
         }
     }
 }

@@ -21,6 +21,7 @@ package org.keycloak.authorization;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.keycloak.Config;
 import org.keycloak.authorization.policy.provider.PolicyProvider;
@@ -37,6 +38,7 @@ import org.keycloak.provider.ProviderFactory;
  */
 public class DefaultAuthorizationProviderFactory implements AuthorizationProviderFactory {
 
+    private Executor scheduler;
     private Map<String, PolicyProviderFactory> policyProviderFactories;
 
     @Override
@@ -46,6 +48,15 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
 
     @Override
     public void init(Config.Scope config) {
+        //TODO: user-defined configuration
+//        Executor executor = Executors.newWorkStealingPool();
+//        this.scheduler = command -> {
+//            Map<Class<?>, Object> contextDataMap = ResteasyProviderFactory.getContextDataMap();
+//            executor.execute(() -> {
+//                ResteasyProviderFactory.pushContextDataMap(contextDataMap);
+//                command.run();
+//            });
+//        };
     }
 
     @Override
@@ -65,7 +76,13 @@ public class DefaultAuthorizationProviderFactory implements AuthorizationProvide
 
     @Override
     public AuthorizationProvider create(KeycloakSession session, RealmModel realm) {
-        return new AuthorizationProvider(session, realm, policyProviderFactories);
+        StoreFactory storeFactory = session.getProvider(CachedStoreFactoryProvider.class);
+
+        if (storeFactory == null) {
+            storeFactory = session.getProvider(StoreFactory.class);
+        }
+
+        return new AuthorizationProvider(session, realm, storeFactory, policyProviderFactories);
     }
 
     private Map<String, PolicyProviderFactory> configurePolicyProviderFactories(KeycloakSessionFactory keycloakSessionFactory) {

@@ -17,8 +17,6 @@
  */
 package org.keycloak.authorization.client.resource;
 
-import java.util.concurrent.Callable;
-
 import org.keycloak.authorization.client.representation.TokenIntrospectionResponse;
 import org.keycloak.authorization.client.util.Http;
 
@@ -27,10 +25,10 @@ import org.keycloak.authorization.client.util.Http;
  */
 public class ProtectionResource {
 
-    private final Callable<String> pat;
+    private final String pat;
     private final Http http;
 
-    public ProtectionResource(Http http, Callable<String> pat) {
+    public ProtectionResource(Http http, String pat) {
         if (pat == null) {
             throw new RuntimeException("No access token was provided when creating client for Protection API.");
         }
@@ -50,7 +48,7 @@ public class ProtectionResource {
     public TokenIntrospectionResponse introspectRequestingPartyToken(String rpt) {
         return this.http.<TokenIntrospectionResponse>post("/protocol/openid-connect/token/introspect")
                 .authentication()
-                    .client()
+                    .oauth2ClientCredentials()
                 .form()
                     .param("token_type_hint", "requesting_party_token")
                     .param("token", rpt)

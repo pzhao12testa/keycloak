@@ -17,6 +17,8 @@
 
 package org.keycloak.authorization.store.syncronization;
 
+import java.util.function.Consumer;
+
 import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.PolicyStore;
@@ -46,7 +48,7 @@ public class UserSynchronizer implements Synchronizer<UserRemovedEvent> {
         RealmModel realm = event.getRealm();
 
         realm.getClients().forEach(clientModel -> {
-            ResourceServer resourceServer = resourceServerStore.findById(clientModel.getId());
+            ResourceServer resourceServer = resourceServerStore.findByClient(clientModel.getId());
 
             if (resourceServer != null) {
                 resourceStore.findByOwner(userModel.getId(), resourceServer.getId()).forEach(resource -> {

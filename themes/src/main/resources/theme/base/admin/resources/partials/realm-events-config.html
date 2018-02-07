@@ -19,7 +19,9 @@
                     <label class="col-md-2 control-label" for="eventsListeners" class="control-label">{{:: 'event-listeners' | translate}}</label>
                     <kc-tooltip>{{:: 'event-listeners.tooltip' | translate}}</kc-tooltip>
                     <div class="col-md-6">
-                        <input ui-select2="eventsConfigSelectOptions" id="eventsListeners" ng-model="eventsConfig.eventsListeners" data-placeholder="{{:: 'select-an-action.placeholder' | translate}}"/>
+                        <select ui-select2 ng-model="eventsConfig.eventsListeners" data-placeholder="{{:: 'select-an-action.placeholder' | translate}}" multiple>
+                            <option ng-repeat="listener in eventListeners" value="{{listener}}">{{listener}}</option>
+                        </select>
                     </div>
                 </div>
             </fieldset>
@@ -94,11 +96,9 @@
                 
             </fieldset>
 
-            <div class="form-group" data-ng-show="access.manageEvents">
-                <div class="col-md-10 col-md-offset-2">
-                    <button data-kc-reset data-ng-disabled="!changed">{{:: 'clear-changes' | translate}}</button>
-                    <button data-kc-save data-ng-disabled="!changed">{{:: 'save' | translate}}</button>
-                </div>
+                <div class="pull-right form-actions" data-ng-show="access.manageEvents">
+                <button data-kc-reset data-ng-show="changed">{{:: 'clear-changes' | translate}}</button>
+                <button data-kc-save data-ng-show="changed">{{:: 'save' | translate}}</button>
             </div>
         </form>
     </div>

@@ -38,7 +38,7 @@ import static org.junit.Assert.assertNotNull;
  * @author Stan Silvert ssilvert@redhat.com (C) 2016 Red Hat Inc.
  */
 public class SessionTest extends AbstractClientTest {
-
+    private static boolean testUserCreated = false;
 
     @Page
     protected AccountManagement testRealmAccountManagementPage;
@@ -46,18 +46,13 @@ public class SessionTest extends AbstractClientTest {
     @Before
     public void init() {
         // make user test user exists in test realm
-        createTestUserWithAdminClient();
-        getCleanup().addUserId(testUser.getId());
+        if (!testUserCreated) {
+            createTestUserWithAdminClient();
 
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.userResourcePath(testUser.getId()), ResourceType.USER);
-        assertAdminEvents.assertEvent(getRealmId(), OperationType.ACTION, AdminEventPaths.userResetPasswordPath(testUser.getId()), ResourceType.USER);
-    }
-
-    @Override
-    public void setDefaultPageUriParameters() {
-        super.setDefaultPageUriParameters();
-        testRealmAccountManagementPage.setAuthRealm(getRealmId());
-        loginPage.setAuthRealm(getRealmId());
+            assertAdminEvents.assertEvent(getRealmId(), OperationType.CREATE, AdminEventPaths.userResourcePath(testUser.getId()), ResourceType.USER);
+            assertAdminEvents.assertEvent(getRealmId(), OperationType.ACTION, AdminEventPaths.userResetPasswordPath(testUser.getId()), ResourceType.USER);
+        }
+        testUserCreated = true;
     }
 
     @Test

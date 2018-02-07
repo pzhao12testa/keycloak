@@ -82,7 +82,7 @@ public interface Resource {
      *
      * @return a list with all scopes associated with this resource
      */
-     List<Scope> getScopes();
+    <S extends Scope> List<S> getScopes();
 
     /**
      * Returns an icon {@link java.net.URI} for this resource.
@@ -103,7 +103,7 @@ public interface Resource {
      *
      * @return the resource server associated with this resource
      */
-     ResourceServer getResourceServer();
+    <R extends ResourceServer> R getResourceServer();
 
     /**
      * Returns the resource's owner, which is usually an identifier that uniquely identifies the resource's owner.

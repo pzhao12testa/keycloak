@@ -42,12 +42,8 @@ public abstract class CommonLDAPGroupMapperConfig {
     // See docs for Mode enum
     public static final String MODE = "mode";
 
-    // See docs for UserRolesRetrieveStrategy enum
+    // See docs for UserRolesRetriever enum
     public static final String USER_ROLES_RETRIEVE_STRATEGY = "user.roles.retrieve.strategy";
-
-    // Used just for UserRolesRetrieveStrategy.GetRolesFromUserMemberOfAttribute. It's the name of the attribute on LDAP user, which is used to track the groups which user is member.
-    // Usually it will "memberof"
-    public static final String MEMBEROF_LDAP_ATTRIBUTE = "memberof.ldap.attribute";
 
 
     protected final ComponentModel mapperModel;
@@ -69,11 +65,6 @@ public abstract class CommonLDAPGroupMapperConfig {
     public String getMembershipUserLdapAttribute(LDAPConfig ldapConfig) {
         String membershipUserAttrName = mapperModel.getConfig().getFirst(MEMBERSHIP_USER_LDAP_ATTRIBUTE);
         return membershipUserAttrName!=null ? membershipUserAttrName : ldapConfig.getUsernameLdapAttribute();
-    }
-
-    public String getMemberOfLdapAttribute() {
-        String memberOfLdapAttrName = mapperModel.getConfig().getFirst(MEMBEROF_LDAP_ATTRIBUTE);
-        return memberOfLdapAttrName!=null ? memberOfLdapAttrName : LDAPConstants.MEMBER_OF;
     }
 
     public LDAPGroupMapperMode getMode() {

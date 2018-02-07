@@ -25,7 +25,6 @@ import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.utils.DefaultAuthenticationFlows;
-import org.keycloak.representations.idm.RealmRepresentation;
 
 import java.util.List;
 
@@ -43,33 +42,23 @@ public class MigrateTo1_7_0 implements Migration {
     public void migrate(KeycloakSession session) {
         List<RealmModel> realms = session.realms().getRealms();
         for (RealmModel realm : realms) {
-            migrateRealm(session, realm);
+            // Set default accessToken timeout for implicit flow
+            realm.setAccessTokenLifespanForImplicitFlow(Constants.DEFAULT_ACCESS_TOKEN_LIFESPAN_FOR_IMPLICIT_FLOW_TIMEOUT);
 
-        }
-    }
+            // Add 'admin-cli' builtin client
+            MigrationProvider migrationProvider = session.getProvider(MigrationProvider.class);
+            migrationProvider.setupAdminCli(realm);
 
-    @Override
-    public void migrateImport(KeycloakSession session, RealmModel realm, RealmRepresentation rep, boolean skipUserDependent) {
-        migrateRealm(session, realm);
-    }
+            // add firstBrokerLogin flow and set it to all identityProviders
+            DefaultAuthenticationFlows.migrateFlows(realm);
+            AuthenticationFlowModel firstBrokerLoginFlow = realm.getFlowByAlias(DefaultAuthenticationFlows.FIRST_BROKER_LOGIN_FLOW);
 
-    protected void migrateRealm(KeycloakSession session, RealmModel realm) {
-        // Set default accessToken timeout for implicit flow
-        realm.setAccessTokenLifespanForImplicitFlow(Constants.DEFAULT_ACCESS_TOKEN_LIFESPAN_FOR_IMPLICIT_FLOW_TIMEOUT);
-
-        // Add 'admin-cli' builtin client
-        MigrationProvider migrationProvider = session.getProvider(MigrationProvider.class);
-        migrationProvider.setupAdminCli(realm);
-
-        // add firstBrokerLogin flow and set it to all identityProviders
-        DefaultAuthenticationFlows.migrateFlows(realm);
-        AuthenticationFlowModel firstBrokerLoginFlow = realm.getFlowByAlias(DefaultAuthenticationFlows.FIRST_BROKER_LOGIN_FLOW);
-
-        List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
-        for (IdentityProviderModel identityProvider : identityProviders) {
-            if (identityProvider.getFirstBrokerLoginFlowId() == null) {
-                identityProvider.setFirstBrokerLoginFlowId(firstBrokerLoginFlow.getId());
-                realm.updateIdentityProvider(identityProvider);
+            List<IdentityProviderModel> identityProviders = realm.getIdentityProviders();
+            for (IdentityProviderModel identityProvider : identityProviders) {
+                if (identityProvider.getFirstBrokerLoginFlowId() == null) {
+                    identityProvider.setFirstBrokerLoginFlowId(firstBrokerLoginFlow.getId());
+                    realm.updateIdentityProvider(identityProvider);
+                }
             }
         }
     }

@@ -66,7 +66,7 @@ public interface ResourceStore {
     /**
      * Finds all {@link Resource} instances with the given uri.
      *
-     * @param uri the identifier of the uri
+     * @param ownerId the identifier of the owner
      * @return a list with all resource instances owned by the given owner
      */
     List<Resource> findByUri(String uri, String resourceServerId);

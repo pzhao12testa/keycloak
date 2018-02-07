@@ -23,7 +23,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -31,7 +30,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,7 +41,11 @@ import org.keycloak.admin.client.resource.ClientResource;
 import org.keycloak.authentication.AuthenticationFlowError;
 import org.keycloak.authentication.authenticators.client.JWTClientAuthenticator;
 import org.keycloak.common.constants.ServiceAccountConstants;
-import org.keycloak.common.util.*;
+import org.keycloak.common.util.BouncyIntegration;
+import org.keycloak.common.util.KeycloakUriBuilder;
+import org.keycloak.common.util.KeystoreUtil;
+import org.keycloak.common.util.Time;
+import org.keycloak.common.util.UriUtils;
 import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.events.Details;
 import org.keycloak.events.Errors;
@@ -86,8 +88,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ws.rs.core.Response;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -99,11 +99,11 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
 
     @Rule
     public AssertEvents events = new AssertEvents(this);
-    private static String client1SAUserId;
+    private String client1SAUserId;
 
-    private static RealmRepresentation testRealm;
-    private static ClientRepresentation app1, app2, app3;
-    private static UserRepresentation defaultUser, serviceAccountUser;
+    private RealmRepresentation testRealm;
+    private ClientRepresentation app1, app2, app3;
+    private UserRepresentation defaultUser, serviceAccountUser;
 
     @BeforeClass
     public static void beforeClientAuthSignedJWTTest() {
@@ -144,6 +144,15 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
 
         realmBuilder.client(app2);
 
+        app3 = ClientBuilder.create()
+                .id(KeycloakModelUtils.generateId())
+                .clientId("client3")
+                .directAccessGrants()
+                .authenticatorType(JWTClientAuthenticator.PROVIDER_ID)
+                .build();
+
+        realmBuilder.client(app3);
+
         // This one is for keystore-client2.p12 , which doesn't work on Sun JDK
 //            app2.setAttribute(JWTClientAuthenticator.CERTIFICATE_ATTR, "MIICnTCCAYUCBgFPPLGHHjANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDDAdjbGllbnQxMB4XDTE1MDgxNzE3MjMzMVoXDTI1MDgxNzE3MjUxMVowEjEQMA4GA1UEAwwHY2xpZW50MTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAIsatXj38fFD9fHslNrsWrubobudXYwwdZpGYqkHIhuDeSojGvhBSLmKIFmtbHMVcLEbS0dIEsSbNVrwjdFfuRuvd9Vu6Ng0JUC8fRhSeQniC3jcBuP8P4WlXK4+ir3Wlya+T6Hum9b68BiH0KyNZtFGJ6zLHuCcq9Bl0JifvibnUkDeTZPwgJNA9+GxS/x8fAkApcAbJrgBZvr57PwhbgHoZdB8aAY5f5ogbGzKDtSUMvFh+Jah39gWtn7p3VOuuMXA8SugogoH8C5m2itrPBL1UPhAcKUeWiqx4SmZe/lZo7x2WbSecNiFaiqBhIW+QbqCYW6I4u0YvuLuEe3+TC8CAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAZzW5DZviCxUQdV5Ab07PZkUfvImHZ73oWWHZqzUQtZtbVdzfp3cnbb2wyXtlOvingO3hgpoTxV8vbKgLbIQfvkGGHBG1F5e0QVdtikfdcwWb7cy4/9F80OD7cgG0ZAzFbQ8ZY7iS3PToBp3+4tbIK2NK0ntt/MYgJnPbHeG4V4qfgUbFm1YgEK7WpbSVU8jGuJ5DWE+mlYgECZKZ5TSlaVGs2XOm6WXrJScucNekwcBWWiHyRsFHZEDzWmzt8TLTLnnb0vVjhx3qCYxah3RbyyMZm6WLZlLAaGEcwNDO8jaA3hAjrxoOA1xEaolQfGVsb/ElelHcR1Zfe0u4Ekd4tw==");
 
@@ -166,20 +175,6 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
 
         testRealm = realmBuilder.build();
         testRealms.add(testRealm);
-    }
-
-    @Before
-    public void recreateApp3() {
-        app3 = ClientBuilder.create()
-                .id(KeycloakModelUtils.generateId())
-                .clientId("client3")
-                .directAccessGrants()
-                .authenticatorType(JWTClientAuthenticator.PROVIDER_ID)
-                .build();
-
-        Response resp = adminClient.realm("test").clients().create(app3);
-        getCleanup().addClientUuid(ApiUtil.getCreatedId(resp));
-        resp.close();
     }
 
     // TEST SUCCESS
@@ -457,7 +452,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         List<NameValuePair> parameters = new LinkedList<NameValuePair>();
         parameters.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.CLIENT_CREDENTIALS));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, null, "unauthorized_client", Errors.INVALID_CLIENT_CREDENTIALS);
@@ -469,7 +464,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.CLIENT_CREDENTIALS));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, "invalid"));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, null, "unauthorized_client", Errors.INVALID_CLIENT_CREDENTIALS);
@@ -481,7 +476,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.GRANT_TYPE, OAuth2Constants.CLIENT_CREDENTIALS));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, null, "unauthorized_client", Errors.INVALID_CLIENT_CREDENTIALS);
@@ -496,7 +491,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, null, "unauthorized_client", Errors.INVALID_CLIENT_CREDENTIALS);
@@ -511,7 +506,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, "unknown-client", "unauthorized_client", Errors.INVALID_CLIENT_CREDENTIALS);
@@ -529,12 +524,12 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
-        assertError(response, "client1", "unauthorized_client", Errors.CLIENT_DISABLED);
+        assertError(response, "client1", "invalid_client", Errors.CLIENT_DISABLED);
 
-        ClientManager.realm(adminClient.realm("test")).clientId("client1").enabled(true);
+        ClientManager.realm(adminClient.realm("test")).clientId("client1").enabled(false);
     }
 
     @Test
@@ -558,7 +553,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, "client1", "unauthorized_client", "client_credentials_setup_required");
@@ -576,7 +571,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         assertError(response, "client1", "unauthorized_client", AuthenticationFlowError.CLIENT_CREDENTIALS_SETUP_REQUIRED.toString().toLowerCase());
@@ -594,7 +589,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         setTimeOffset(0);
@@ -613,7 +608,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, invalidJwt));
 
-        CloseableHttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse resp = sendRequest(oauth.getServiceAccountUrl(), parameters);
         OAuthClient.AccessTokenResponse response = new OAuthClient.AccessTokenResponse(resp);
 
         setTimeOffset(0);
@@ -723,7 +718,6 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
     }
 
     private static void assertCertificate(ClientRepresentation client, String certOld, String pem) {
-        pem = PemUtils.removeBeginEnd(pem);
         final String certNew = client.getAttributes().get(JWTClientAuthenticator.CERTIFICATE_ATTR);
         assertNotEquals("The old and new certificates shouldn't match", certOld, certNew);
         assertEquals("Certificates don't match", pem, certNew);
@@ -739,7 +733,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, signedJwt));
 
-        CloseableHttpResponse response = sendRequest(oauth.getAccessTokenUrl(), parameters);
+        HttpResponse response = sendRequest(oauth.getAccessTokenUrl(), parameters);
         return new OAuthClient.AccessTokenResponse(response);
     }
 
@@ -750,7 +744,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, signedJwt));
 
-        CloseableHttpResponse response = sendRequest(oauth.getRefreshTokenUrl(), parameters);
+        HttpResponse response = sendRequest(oauth.getRefreshTokenUrl(), parameters);
         return new OAuthClient.AccessTokenResponse(response);
     }
 
@@ -770,7 +764,7 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, signedJwt));
 
-        CloseableHttpResponse response = sendRequest(oauth.getServiceAccountUrl(), parameters);
+        HttpResponse response = sendRequest(oauth.getServiceAccountUrl(), parameters);
         return new OAuthClient.AccessTokenResponse(response);
     }
 
@@ -782,11 +776,11 @@ public class ClientAuthSignedJWTTest extends AbstractKeycloakTest {
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION_TYPE, OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT));
         parameters.add(new BasicNameValuePair(OAuth2Constants.CLIENT_ASSERTION, signedJwt));
 
-        CloseableHttpResponse response = sendRequest(oauth.getResourceOwnerPasswordCredentialGrantUrl(), parameters);
+        HttpResponse response = sendRequest(oauth.getResourceOwnerPasswordCredentialGrantUrl(), parameters);
         return new OAuthClient.AccessTokenResponse(response);
     }
 
-    private CloseableHttpResponse sendRequest(String requestUrl, List<NameValuePair> parameters) throws Exception {
+    private HttpResponse sendRequest(String requestUrl, List<NameValuePair> parameters) throws Exception {
         CloseableHttpClient client = new DefaultHttpClient();
         try {
             HttpPost post = new HttpPost(requestUrl);

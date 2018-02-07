@@ -45,15 +45,10 @@ public class OIDCBasicResponseTypeCodeTest extends AbstractOIDCResponseTypeTest 
     }
 
 
-    @Override
-    protected boolean isFragment() {
-        return false;
-    }
-
-    @Override
-    protected List<IDToken> testAuthzResponseAndRetrieveIDTokens(OAuthClient.AuthorizationEndpointResponse authzResponse, EventRepresentation loginEvent) {
+    protected List<IDToken> retrieveIDTokens(EventRepresentation loginEvent) {
         Assert.assertEquals(OIDCResponseType.CODE, loginEvent.getDetails().get(Details.RESPONSE_TYPE));
 
+        OAuthClient.AuthorizationEndpointResponse authzResponse = new OAuthClient.AuthorizationEndpointResponse(oauth, false);
         Assert.assertNull(authzResponse.getAccessToken());
         Assert.assertNull(authzResponse.getIdToken());
 
@@ -67,8 +62,7 @@ public class OIDCBasicResponseTypeCodeTest extends AbstractOIDCResponseTypeTest 
     public void nonceNotUsed() {
         EventRepresentation loginEvent = loginUser(null);
 
-        OAuthClient.AuthorizationEndpointResponse authzResponse = new OAuthClient.AuthorizationEndpointResponse(oauth, false);
-        List<IDToken> idTokens = testAuthzResponseAndRetrieveIDTokens(authzResponse, loginEvent);
+        List<IDToken> idTokens = retrieveIDTokens(loginEvent);
         for (IDToken idToken : idTokens) {
             Assert.assertNull(idToken.getNonce());
         }

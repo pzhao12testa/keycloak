@@ -86,8 +86,7 @@ public class SAMLSloRequestParser extends SAMLRequestAbstractParser implements P
      * @see {@link ParserNamespaceSupport#supports(QName)}
      */
     public boolean supports(QName qname) {
-        return PROTOCOL_NSURI.get().equals(qname.getNamespaceURI())
-          && JBossSAMLConstants.LOGOUT_REQUEST.get().equals(qname.getLocalPart());
+        return PROTOCOL_NSURI.get().equals(qname.getNamespaceURI()) && JBossSAMLConstants.LOGOUT_REQUEST.equals(qname.getLocalPart());
     }
 
     /**

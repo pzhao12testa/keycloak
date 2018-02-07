@@ -56,8 +56,6 @@ public class UserStorageProviderSpi implements Spi {
     static {
         List<ProviderConfigProperty> config = ProviderConfigurationBuilder.create()
                 .property()
-                .name("enabled").type(ProviderConfigProperty.BOOLEAN_TYPE).add()
-                .property()
                 .name("priority").type(ProviderConfigProperty.STRING_TYPE).add()
                 .property()
                 .name("fullSyncPeriod").type(ProviderConfigProperty.STRING_TYPE).add()

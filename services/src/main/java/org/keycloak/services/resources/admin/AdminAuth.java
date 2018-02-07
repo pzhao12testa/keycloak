@@ -98,7 +98,4 @@ public class AdminAuth {
         return false;
     }
 
-    public enum Resource {
-        CLIENT, USER, REALM, EVENTS, IDENTITY_PROVIDER, IMPERSONATION, AUTHORIZATION
-    }
 }

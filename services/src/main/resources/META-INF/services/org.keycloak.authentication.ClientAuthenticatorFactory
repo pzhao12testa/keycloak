@@ -17,4 +17,3 @@
 
 org.keycloak.authentication.authenticators.client.ClientIdAndSecretAuthenticator
 org.keycloak.authentication.authenticators.client.JWTClientAuthenticator
-org.keycloak.authentication.authenticators.client.JWTClientSecretAuthenticator

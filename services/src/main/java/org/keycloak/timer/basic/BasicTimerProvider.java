@@ -52,11 +52,10 @@ public class BasicTimerProvider implements TimerProvider {
             }
         };
 
-        TimerTaskContextImpl taskContext = new TimerTaskContextImpl(runnable, task, intervalMillis);
-        TimerTaskContextImpl existingTask = factory.putTask(taskName, taskContext);
+        TimerTask existingTask = factory.putTask(taskName, task);
         if (existingTask != null) {
             logger.debugf("Existing timer task '%s' found. Cancelling it", taskName);
-            existingTask.timerTask.cancel();
+            existingTask.cancel();
         }
 
         logger.debugf("Starting task '%s' with interval '%d'", taskName, intervalMillis);
@@ -70,14 +69,12 @@ public class BasicTimerProvider implements TimerProvider {
     }
 
     @Override
-    public TimerTaskContext cancelTask(String taskName) {
-        TimerTaskContextImpl existingTask = factory.removeTask(taskName);
+    public void cancelTask(String taskName) {
+        TimerTask existingTask = factory.removeTask(taskName);
         if (existingTask != null) {
             logger.debugf("Cancelling task '%s'", taskName);
-            existingTask.timerTask.cancel();
+            existingTask.cancel();
         }
-
-        return existingTask;
     }
 
     @Override

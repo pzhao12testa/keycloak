@@ -25,29 +25,15 @@ import org.infinispan.manager.EmbeddedCacheManager;
  */
 public class DefaultInfinispanConnectionProvider implements InfinispanConnectionProvider {
 
-    private final EmbeddedCacheManager cacheManager;
-    private final String siteName;
-    private final String nodeName;
+    private EmbeddedCacheManager cacheManager;
 
-    public DefaultInfinispanConnectionProvider(EmbeddedCacheManager cacheManager, String nodeName, String siteName) {
+    public DefaultInfinispanConnectionProvider(EmbeddedCacheManager cacheManager) {
         this.cacheManager = cacheManager;
-        this.nodeName = nodeName;
-        this.siteName = siteName;
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String name) {
         return cacheManager.getCache(name);
-    }
-
-    @Override
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    @Override
-    public String getSiteName() {
-        return siteName;
     }
 
     @Override

@@ -53,13 +53,6 @@ public class RealmManager {
         return this;
     }
 
-    public RealmManager refreshTokenMaxReuse(int refreshTokenMaxReuse) {
-        RealmRepresentation rep = realm.toRepresentation();
-        rep.setRefreshTokenMaxReuse(refreshTokenMaxReuse);
-        realm.update(rep);
-        return this;
-    }
-
     public void generateKeys() {
         RealmRepresentation rep = realm.toRepresentation();
 

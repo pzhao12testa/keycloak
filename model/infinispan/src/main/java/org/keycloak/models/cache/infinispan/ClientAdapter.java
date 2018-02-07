@@ -23,10 +23,8 @@ import org.keycloak.models.ProtocolMapperModel;
 import org.keycloak.models.RealmModel;
 import org.keycloak.models.RoleContainerModel;
 import org.keycloak.models.RoleModel;
-import org.keycloak.models.cache.CachedObject;
 import org.keycloak.models.cache.infinispan.entities.CachedClient;
 
-import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,15 +35,17 @@ import java.util.Set;
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
  * @version $Revision: 1 $
  */
-public class ClientAdapter implements ClientModel, CachedObject {
+public class ClientAdapter implements ClientModel {
     protected RealmCacheSession cacheSession;
     protected RealmModel cachedRealm;
+    protected RealmCache cache;
 
     protected ClientModel updated;
     protected CachedClient cached;
 
-    public ClientAdapter(RealmModel cachedRealm, CachedClient cached, RealmCacheSession cacheSession) {
+    public ClientAdapter(RealmModel cachedRealm, CachedClient cached, RealmCacheSession cacheSession, RealmCache cache) {
         this.cachedRealm = cachedRealm;
+        this.cache = cache;
         this.cacheSession = cacheSession;
         this.cached = cached;
     }
@@ -53,7 +53,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
     private void getDelegateForUpdate() {
         if (updated == null) {
             cacheSession.registerClientInvalidation(cached.getId(), cached.getClientId(), cachedRealm.getId());
-            updated = cacheSession.getRealmDelegate().getClientById(cached.getId(), cachedRealm);
+            updated = cacheSession.getDelegate().getClientById(cached.getId(), cachedRealm);
             if (updated == null) throw new IllegalStateException("Not found in database");
         }
     }
@@ -65,14 +65,9 @@ public class ClientAdapter implements ClientModel, CachedObject {
     protected boolean isUpdated() {
         if (updated != null) return true;
         if (!invalidated) return false;
-        updated = cacheSession.getRealmDelegate().getClientById(cached.getId(), cachedRealm);
+        updated = cacheSession.getDelegate().getClientById(cached.getId(), cachedRealm);
         if (updated == null) throw new IllegalStateException("Not found in database");
         return true;
-    }
-
-    @Override
-    public long getCacheTimestamp() {
-        return cached.getCacheTimestamp();
     }
 
     @Override
@@ -204,7 +199,7 @@ public class ClientAdapter implements ClientModel, CachedObject {
     }
 
     public boolean validateSecret(String secret) {
-        return MessageDigest.isEqual(secret.getBytes(), getSecret().getBytes());
+        return secret.equals(getSecret());
     }
 
     public String getSecret() {
@@ -346,34 +341,6 @@ public class ClientAdapter implements ClientModel, CachedObject {
         if (isUpdated()) return updated.getAttributes();
         Map<String, String> copy = new HashMap<String, String>();
         copy.putAll(cached.getAttributes());
-        return copy;
-    }
-
-    @Override
-    public void setAuthenticationFlowBindingOverride(String name, String value) {
-        getDelegateForUpdate();
-        updated.setAuthenticationFlowBindingOverride(name, value);
-
-    }
-
-    @Override
-    public void removeAuthenticationFlowBindingOverride(String name) {
-        getDelegateForUpdate();
-        updated.removeAuthenticationFlowBindingOverride(name);
-
-    }
-
-    @Override
-    public String getAuthenticationFlowBindingOverride(String name) {
-        if (isUpdated()) return updated.getAuthenticationFlowBindingOverride(name);
-        return cached.getAuthFlowBindings().get(name);
-    }
-
-    @Override
-    public Map<String, String> getAuthenticationFlowBindingOverrides() {
-        if (isUpdated()) return updated.getAuthenticationFlowBindingOverrides();
-        Map<String, String> copy = new HashMap<String, String>();
-        copy.putAll(cached.getAuthFlowBindings());
         return copy;
     }
 

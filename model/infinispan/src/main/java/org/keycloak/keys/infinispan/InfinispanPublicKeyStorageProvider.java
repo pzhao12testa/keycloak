@@ -35,6 +35,7 @@ import org.keycloak.keys.PublicKeyStorageProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakTransaction;
 import org.keycloak.models.cache.infinispan.ClearCacheEvent;
+import org.keycloak.models.cache.infinispan.InfinispanCacheRealmProviderFactory;
 
 
 /**
@@ -68,7 +69,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
     public void clearCache() {
         keys.clear();
         ClusterProvider cluster = session.getProvider(ClusterProvider.class);
-        cluster.notify(InfinispanPublicKeyStorageProviderFactory.KEYS_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true, ClusterProvider.DCNotify.ALL_DCS);
+        cluster.notify(InfinispanPublicKeyStorageProviderFactory.KEYS_CLEAR_CACHE_EVENTS, new ClearCacheEvent(), true);
     }
 
 
@@ -121,7 +122,7 @@ public class InfinispanPublicKeyStorageProvider implements PublicKeyStorageProvi
 
         for (String cacheKey : invalidations) {
             keys.remove(cacheKey);
-            cluster.notify(InfinispanPublicKeyStorageProviderFactory.PUBLIC_KEY_STORAGE_INVALIDATION_EVENT, PublicKeyStorageInvalidationEvent.create(cacheKey), true, ClusterProvider.DCNotify.ALL_DCS);
+            cluster.notify(cacheKey, PublicKeyStorageInvalidationEvent.create(cacheKey), true);
         }
     }
 

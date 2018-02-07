@@ -20,7 +20,6 @@ package org.keycloak.testsuite;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.rules.TestRule;
@@ -40,7 +39,6 @@ import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import static org.hamcrest.Matchers.is;
 
 /**
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -49,8 +47,6 @@ public class AssertEvents implements TestRule {
 
     public static final String DEFAULT_CLIENT_ID = "test-app";
     public static final String DEFAULT_IP_ADDRESS = "127.0.0.1";
-    public static final String DEFAULT_IP_ADDRESS_V6 = "0:0:0:0:0:0:0:1";
-    public static final String DEFAULT_IP_ADDRESS_V6_SHORT = "::1";
     public static final String DEFAULT_REALM = "test";
     public static final String DEFAULT_USERNAME = "test-user@localhost";
 
@@ -68,7 +64,7 @@ public class AssertEvents implements TestRule {
             @Override
             public void evaluate() throws Throwable {
                 // TODO: Ideally clear the queue just before testClass rather then before each method
-                clear();
+                context.getTestingClient().testing().clearEventQueue();
                 base.evaluate();
                 // TODO Test should fail if there are leftover events
             }
@@ -88,11 +84,16 @@ public class AssertEvents implements TestRule {
     }
 
     public void clear() {
-        context.getTestingClient().testing().clearEventQueue();
+        Response res = context.testingClient.testing().clearEventQueue();
+        try {
+            Assert.assertEquals("clear-event-queue success", res.getStatus(), 200);
+        } finally {
+            res.close();
+        }
     }
 
     public ExpectedEvent expectRequiredAction(EventType event) {
-        return expectLogin().event(event).removeDetail(Details.CONSENT).session(Matchers.isEmptyOrNullString());
+        return expectLogin().event(event).removeDetail(Details.CONSENT).session(isUUID());
     }
 
     public ExpectedEvent expectLogin() {
@@ -169,7 +170,7 @@ public class AssertEvents implements TestRule {
                 .realm(defaultRealmId())
                 .client(DEFAULT_CLIENT_ID)
                 .user(defaultUserId())
-                .ipAddress(CoreMatchers.anyOf(is(DEFAULT_IP_ADDRESS), is(DEFAULT_IP_ADDRESS_V6), is(DEFAULT_IP_ADDRESS_V6_SHORT)))
+                .ipAddress(DEFAULT_IP_ADDRESS)
                 .session((String) null)
                 .event(event);
     }
@@ -179,8 +180,7 @@ public class AssertEvents implements TestRule {
         private Matcher<String> realmId;
         private Matcher<String> userId;
         private Matcher<String> sessionId;
-        private Matcher<String> ipAddress;
-        private HashMap<String, Matcher<? super String>> details;
+        private HashMap<String, Matcher<String>> details;
 
         public ExpectedEvent realm(Matcher<String> realmId) {
             this.realmId = realmId;
@@ -232,12 +232,7 @@ public class AssertEvents implements TestRule {
         }
 
         public ExpectedEvent ipAddress(String ipAddress) {
-            this.ipAddress = CoreMatchers.equalTo(ipAddress);
-            return this;
-        }
-
-        public ExpectedEvent ipAddress(Matcher<String> ipAddress) {
-            this.ipAddress = ipAddress;
+            expected.setIpAddress(ipAddress);
             return this;
         }
 
@@ -250,9 +245,9 @@ public class AssertEvents implements TestRule {
             return detail(key, CoreMatchers.equalTo(value));
         }
 
-        public ExpectedEvent detail(String key, Matcher<? super String> matcher) {
+        public ExpectedEvent detail(String key, Matcher<String> matcher) {
             if (details == null) {
-                details = new HashMap<String, Matcher<? super String>>();
+                details = new HashMap<String, Matcher<String>>();
             }
             details.put(key, matcher);
             return this;
@@ -280,28 +275,28 @@ public class AssertEvents implements TestRule {
         }
 
         public EventRepresentation assertEvent(EventRepresentation actual) {
-            if (expected.getError() != null && ! expected.getType().toString().endsWith("_ERROR")) {
+            if (expected.getError() != null && !expected.getType().toString().endsWith("_ERROR")) {
                 expected.setType(expected.getType() + "_ERROR");
             }
-            Assert.assertThat("type", actual.getType(), is(expected.getType()));
-            Assert.assertThat("realm ID", actual.getRealmId(), is(realmId));
-            Assert.assertThat("client ID", actual.getClientId(), is(expected.getClientId()));
-            Assert.assertThat("error", actual.getError(), is(expected.getError()));
-            Assert.assertThat("ip address", actual.getIpAddress(), ipAddress);
-            Assert.assertThat("user ID", actual.getUserId(), is(userId));
-            Assert.assertThat("session ID", actual.getSessionId(), is(sessionId));
+            Assert.assertEquals(expected.getType(), actual.getType());
+            Assert.assertThat(actual.getRealmId(), realmId);
+            Assert.assertEquals(expected.getClientId(), actual.getClientId());
+            Assert.assertEquals(expected.getError(), actual.getError());
+            Assert.assertEquals(expected.getIpAddress(), actual.getIpAddress());
+            Assert.assertThat(actual.getUserId(), userId);
+            Assert.assertThat(actual.getSessionId(), sessionId);
 
             if (details == null || details.isEmpty()) {
 //                Assert.assertNull(actual.getDetails());
             } else {
                 Assert.assertNotNull(actual.getDetails());
-                for (Map.Entry<String, Matcher<? super String>> d : details.entrySet()) {
+                for (Map.Entry<String, Matcher<String>> d : details.entrySet()) {
                     String actualValue = actual.getDetails().get(d.getKey());
                     if (!actual.getDetails().containsKey(d.getKey())) {
                         Assert.fail(d.getKey() + " missing");
                     }
 
-                    Assert.assertThat("Unexpected value for " + d.getKey(), actualValue, is(d.getValue()));
+                    Assert.assertThat("Unexpected value for " + d.getKey(), actualValue, d.getValue());
                 }
                 /*
                 for (String k : actual.getDetails().keySet()) {

@@ -31,8 +31,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
@@ -89,7 +89,7 @@ public class RoleEntity {
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {})
     @JoinTable(name = "COMPOSITE_ROLE", joinColumns = @JoinColumn(name = "COMPOSITE"), inverseJoinColumns = @JoinColumn(name = "CHILD_ROLE"))
-    private Set<RoleEntity> compositeRoles = new HashSet<>();
+    private Collection<RoleEntity> compositeRoles = new ArrayList<RoleEntity>();
 
     public String getId() {
         return id;
@@ -133,11 +133,11 @@ public class RoleEntity {
         this.scopeParamRequired = scopeParamRequired;
     }
 
-    public Set<RoleEntity> getCompositeRoles() {
+    public Collection<RoleEntity> getCompositeRoles() {
         return compositeRoles;
     }
 
-    public void setCompositeRoles(Set<RoleEntity> compositeRoles) {
+    public void setCompositeRoles(Collection<RoleEntity> compositeRoles) {
         this.compositeRoles = compositeRoles;
     }
 

@@ -95,10 +95,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 .property().name(LDAPConstants.EDIT_MODE)
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .add()
-                .property().name(UserStorageProviderModel.IMPORT_ENABLED)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                .defaultValue("true")
-                .add()
                 .property().name(LDAPConstants.SYNC_REGISTRATIONS)
                 .type(ProviderConfigProperty.BOOLEAN_TYPE)
                 .defaultValue("false")
@@ -141,10 +137,6 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                 .property().name(LDAPConstants.SEARCH_SCOPE)
                 .type(ProviderConfigProperty.STRING_TYPE)
                 .defaultValue("1")
-                .add()
-                .property().name(LDAPConstants.VALIDATE_PASSWORD_POLICY)
-                .type(ProviderConfigProperty.BOOLEAN_TYPE)
-                .defaultValue("false")
                 .add()
                 .property().name(LDAPConstants.USE_TRUSTSTORE_SPI)
                 .type(ProviderConfigProperty.STRING_TYPE)
@@ -383,19 +375,13 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
     }
 
     @Override
-    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel oldModel, ComponentModel newModel) {
-        checkKerberosCredential(session, realm, newModel);
+    public void onUpdate(KeycloakSession session, RealmModel realm, ComponentModel model) {
+        checkKerberosCredential(session, realm, model);
 
     }
 
-    @Override
-    public void preRemove(KeycloakSession session, RealmModel realm, ComponentModel model) {
-        String allowKerberosCfg = model.getConfig().getFirst(KerberosConstants.ALLOW_KERBEROS_AUTHENTICATION);
-        if (Boolean.valueOf(allowKerberosCfg)) {
-            CredentialHelper.setOrReplaceAuthenticationRequirement(session, realm, CredentialRepresentation.KERBEROS,
-                    AuthenticationExecutionModel.Requirement.DISABLED, null);
-        }
-    }
+
+
 
     @Override
     public SynchronizationResult sync(KeycloakSessionFactory sessionFactory, String realmId, UserStorageProviderModel model) {
@@ -540,7 +526,7 @@ public class LDAPStorageProviderFactory implements UserStorageProviderFactory<LD
                                     LDAPStorageMapper ldapMapper = ldapFedProvider.getMapperManager().getMapper(mapperModel);
                                     ldapMapper.onImportUserFromLDAP(ldapUser, currentUser, currentRealm, false);
                                 }
-                                session.userCache().evict(currentRealm, currentUser);
+
                                 logger.debugf("Updated user from LDAP: %s", currentUser.getUsername());
                                 syncResult.increaseUpdated();
                             } else {

@@ -53,7 +53,7 @@ public class UpperCasePasswordPolicyProvider implements PasswordPolicyProvider {
 
     @Override
     public Object parseConfig(String value) {
-        return parseInteger(value, 1);
+        return value != null ? Integer.parseInt(value) : 1;
     }
 
     @Override

@@ -124,11 +124,6 @@ public class LDAPIdentityStore implements IdentityStore {
 
         String rdnAttrVal = ldapObject.getAttributeAsString(rdnAttrName);
 
-        // Could be the case when RDN attribute of the target object is not included in Keycloak mappers
-        if (rdnAttrVal == null) {
-            return;
-        }
-
         String oldRdnAttrVal = ldapObject.getDn().getFirstRdnAttrValue();
         if (!oldRdnAttrVal.equals(rdnAttrVal)) {
             LDAPDn newLdapDn = ldapObject.getDn().getParentDn();
@@ -447,10 +442,9 @@ public class LDAPIdentityStore implements IdentityStore {
             for (String objectClassValue : ldapObject.getObjectClasses()) {
                 objectClassAttribute.add(objectClassValue);
 
-                if ((objectClassValue.equalsIgnoreCase(LDAPConstants.GROUP_OF_NAMES)
+                if (objectClassValue.equalsIgnoreCase(LDAPConstants.GROUP_OF_NAMES)
                         || objectClassValue.equalsIgnoreCase(LDAPConstants.GROUP_OF_ENTRIES)
-                        || objectClassValue.equalsIgnoreCase(LDAPConstants.GROUP_OF_UNIQUE_NAMES)) &&
-                        (entryAttributes.get(LDAPConstants.MEMBER) == null)) {
+                        || objectClassValue.equalsIgnoreCase(LDAPConstants.GROUP_OF_UNIQUE_NAMES)) {
                     entryAttributes.put(LDAPConstants.MEMBER, LDAPConstants.EMPTY_MEMBER_ATTRIBUTE_VALUE);
                 }
             }

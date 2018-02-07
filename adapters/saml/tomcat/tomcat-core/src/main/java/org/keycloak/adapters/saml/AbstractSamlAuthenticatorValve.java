@@ -24,11 +24,13 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.authenticator.FormAuthenticator;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
-import org.jboss.logging.Logger;
-
 import org.keycloak.adapters.saml.config.parsers.DeploymentBuilder;
 import org.keycloak.adapters.saml.config.parsers.ResourceLoader;
-import org.keycloak.adapters.spi.*;
+import org.keycloak.adapters.spi.AuthChallenge;
+import org.keycloak.adapters.spi.AuthOutcome;
+import org.keycloak.adapters.spi.HttpFacade;
+import org.keycloak.adapters.spi.InMemorySessionIdMapper;
+import org.keycloak.adapters.spi.SessionIdMapper;
 import org.keycloak.adapters.tomcat.CatalinaHttpFacade;
 import org.keycloak.adapters.tomcat.CatalinaUserSessionManagement;
 import org.keycloak.adapters.tomcat.GenericPrincipalFactory;
@@ -43,8 +45,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.*;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Keycloak authentication valve
@@ -57,11 +59,10 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
 
     public static final String TOKEN_STORE_NOTE = "TOKEN_STORE_NOTE";
 
-	private final static Logger log = Logger.getLogger(AbstractSamlAuthenticatorValve.class);
+	private final static Logger log = Logger.getLogger(""+AbstractSamlAuthenticatorValve.class);
 	protected CatalinaUserSessionManagement userSessionManagement = new CatalinaUserSessionManagement();
     protected SamlDeploymentContext deploymentContext;
     protected SessionIdMapper mapper = new InMemorySessionIdMapper();
-    protected SessionIdMapperUpdater idMapperUpdater = SessionIdMapperUpdater.DIRECT;
 
     @Override
     public void lifecycleEvent(LifecycleEvent event) {
@@ -69,7 +70,7 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
             cache = false;
         } else if (Lifecycle.AFTER_START_EVENT.equals(event.getType())) {
         	keycloakInit();
-        } else if (Lifecycle.BEFORE_STOP_EVENT.equals(event.getType())) {
+        } else if (event.getType() == Lifecycle.BEFORE_STOP_EVENT) {
             beforeStop();
         }
     }
@@ -102,14 +103,14 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
                 //deploymentContext = new SamlDeploymentContext(configResolver);
                 //log.log(Level.INFO, "Using {0} to resolve Keycloak configuration on a per-request basis.", configResolverClass);
             } catch (Exception ex) {
-                log.errorv("The specified resolver {0} could NOT be loaded. Keycloak is unconfigured and will deny all requests. Reason: {1}", configResolverClass, ex.getMessage());
+                log.log(Level.FINE, "The specified resolver {0} could NOT be loaded. Keycloak is unconfigured and will deny all requests. Reason: {1}", new Object[]{configResolverClass, ex.getMessage()});
                 //deploymentContext = new AdapterDeploymentContext(new KeycloakDeployment());
             }
         } else {
             InputStream is = getConfigInputStream(context);
             final SamlDeployment deployment;
             if (is == null) {
-                log.error("No adapter configuration. Keycloak is unconfigured and will deny all requests.");
+                log.info("No adapter configuration. Keycloak is unconfigured and will deny all requests.");
                 deployment = new DefaultSamlDeployment();
             } else {
                 try {
@@ -125,12 +126,10 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
                 }
             }
             deploymentContext = new SamlDeploymentContext(deployment);
-            log.debug("Keycloak is using a per-deployment configuration.");
+            log.fine("Keycloak is using a per-deployment configuration.");
         }
 
         context.getServletContext().setAttribute(SamlDeploymentContext.class.getName(), deploymentContext);
-
-        addTokenStoreUpdaters();
     }
 
     protected void beforeStop() {
@@ -141,7 +140,8 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
         if (xml == null) {
             return null;
         }
-        log.trace("**** using " + AdapterConstants.AUTH_DATA_PARAM_NAME);
+        log.finest("**** using " + AdapterConstants.AUTH_DATA_PARAM_NAME);
+        log.finest(xml);
         return new ByteArrayInputStream(xml.getBytes());
     }
 
@@ -150,13 +150,13 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
         if (is == null) {
             String path = context.getServletContext().getInitParameter("keycloak.config.file");
             if (path == null) {
-                log.trace("**** using /WEB-INF/keycloak-saml.xml");
+                log.fine("**** using /WEB-INF/keycloak-saml.xml");
                 is = context.getServletContext().getResourceAsStream("/WEB-INF/keycloak-saml.xml");
             } else {
                 try {
                     is = new FileInputStream(path);
                 } catch (FileNotFoundException e) {
-                    log.errorv("NOT FOUND {0}", path);
+                    log.log(Level.SEVERE, "NOT FOUND {0}", path);
                     throw new RuntimeException(e);
                 }
             }
@@ -166,7 +166,7 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
 
     @Override
     public void invoke(Request request, Response response) throws IOException, ServletException {
-        log.trace("*********************** SAML ************");
+        log.fine("*********************** SAML ************");
         CatalinaHttpFacade facade = new CatalinaHttpFacade(response, request);
         SamlDeployment deployment = deploymentContext.resolveDeployment(facade);
         if (request.getRequestURI().substring(request.getContextPath().length()).endsWith("/saml")) {
@@ -208,11 +208,11 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
     }
 
     protected boolean authenticateInternal(Request request, HttpServletResponse response, Object loginConfig) throws IOException {
-        log.trace("authenticateInternal");
+        log.fine("authenticateInternal");
         CatalinaHttpFacade facade = new CatalinaHttpFacade(response, request);
         SamlDeployment deployment = deploymentContext.resolveDeployment(facade);
         if (deployment == null || !deployment.isConfigured()) {
-            log.trace("deployment not configured");
+            log.fine("deployment not configured");
             return false;
         }
         SamlSessionStore tokenStore = getSessionStore(request, facade, deployment);
@@ -225,7 +225,7 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
     protected boolean executeAuthenticator(Request request, HttpServletResponse response, CatalinaHttpFacade facade, SamlDeployment deployment, SamlAuthenticator authenticator) {
         AuthOutcome outcome = authenticator.authenticate();
         if (outcome == AuthOutcome.AUTHENTICATED) {
-            log.trace("AUTHENTICATED");
+            log.fine("AUTHENTICATED");
             if (facade.isEnded()) {
                 return false;
             }
@@ -237,13 +237,13 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
                 forwardToLogoutPage(request, response, deployment);
 
             }
-            log.trace("Logging OUT");
+            log.fine("Logging OUT");
             return false;
         }
 
         AuthChallenge challenge = authenticator.getChallenge();
         if (challenge != null) {
-            log.trace("challenge");
+            log.fine("challenge");
             challenge.challenge(facade);
         }
         return false;
@@ -275,68 +275,8 @@ public abstract class AbstractSamlAuthenticatorValve extends FormAuthenticator i
 
     protected SamlSessionStore createSessionStore(Request request, HttpFacade facade, SamlDeployment resolvedDeployment) {
         SamlSessionStore store;
-        store = new CatalinaSamlSessionStore(userSessionManagement, createPrincipalFactory(), mapper, idMapperUpdater, request, this, facade, resolvedDeployment);
+        store = new CatalinaSamlSessionStore(userSessionManagement, createPrincipalFactory(), mapper, request, this, facade, resolvedDeployment);
         return store;
     }
 
-    protected void addTokenStoreUpdaters() {
-        SessionIdMapperUpdater updater = getIdMapperUpdater();
-
-        try {
-            String idMapperSessionUpdaterClasses = context.getServletContext().getInitParameter("keycloak.sessionIdMapperUpdater.classes");
-            if (idMapperSessionUpdaterClasses == null) {
-                return;
-            }
-
-            for (String clazz : idMapperSessionUpdaterClasses.split("\\s*,\\s*")) {
-                if (! clazz.isEmpty()) {
-                    updater = invokeAddTokenStoreUpdaterMethod(clazz, updater);
-                }
-            }
-        } finally {
-            setIdMapperUpdater(updater);
-        }
-    }
-
-    private SessionIdMapperUpdater invokeAddTokenStoreUpdaterMethod(String idMapperSessionUpdaterClass, SessionIdMapperUpdater previousIdMapperUpdater) {
-        try {
-            Class<?> clazz = context.getLoader().getClassLoader().loadClass(idMapperSessionUpdaterClass);
-            Method addTokenStoreUpdatersMethod = clazz.getMethod("addTokenStoreUpdaters", Context.class, SessionIdMapper.class, SessionIdMapperUpdater.class);
-            if (! Modifier.isStatic(addTokenStoreUpdatersMethod.getModifiers())
-              || ! Modifier.isPublic(addTokenStoreUpdatersMethod.getModifiers())
-              || ! SessionIdMapperUpdater.class.isAssignableFrom(addTokenStoreUpdatersMethod.getReturnType())) {
-                log.errorv("addTokenStoreUpdaters method in class {0} has to be public static. Ignoring class.", idMapperSessionUpdaterClass);
-                return previousIdMapperUpdater;
-            }
-
-            log.debugv("Initializing sessionIdMapperUpdater class {0}", idMapperSessionUpdaterClass);
-            return (SessionIdMapperUpdater) addTokenStoreUpdatersMethod.invoke(null, context, mapper, previousIdMapperUpdater);
-        } catch (ClassNotFoundException ex) {
-            log.warnv(ex, "Cannot use sessionIdMapperUpdater class {0}", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        } catch (NoSuchMethodException ex) {
-            log.warnv(ex, "Cannot use sessionIdMapperUpdater class {0}", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        } catch (SecurityException ex) {
-            log.warnv(ex, "Cannot use sessionIdMapperUpdater class {0}", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        } catch (IllegalAccessException ex) {
-            log.warnv(ex, "Cannot use {0}.addTokenStoreUpdaters(DeploymentInfo, SessionIdMapper) method", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        } catch (IllegalArgumentException ex) {
-            log.warnv(ex, "Cannot use {0}.addTokenStoreUpdaters(DeploymentInfo, SessionIdMapper) method", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        } catch (InvocationTargetException ex) {
-            log.warnv(ex, "Cannot use {0}.addTokenStoreUpdaters(DeploymentInfo, SessionIdMapper) method", idMapperSessionUpdaterClass);
-            return previousIdMapperUpdater;
-        }
-    }
-
-    public SessionIdMapperUpdater getIdMapperUpdater() {
-        return idMapperUpdater;
-    }
-
-    public void setIdMapperUpdater(SessionIdMapperUpdater idMapperUpdater) {
-        this.idMapperUpdater = idMapperUpdater;
-    }
 }

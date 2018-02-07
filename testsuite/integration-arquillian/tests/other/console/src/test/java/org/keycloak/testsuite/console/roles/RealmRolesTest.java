@@ -7,13 +7,10 @@ import org.junit.Test;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.testsuite.console.page.roles.CreateRole;
 import org.keycloak.testsuite.console.page.roles.RealmRoles;
-import org.keycloak.testsuite.console.page.roles.RoleDetails;
+import org.keycloak.testsuite.console.page.roles.Role;
 import org.keycloak.testsuite.util.Timer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.keycloak.testsuite.util.URLAssert.assertCurrentUrlEquals;
 import static org.keycloak.testsuite.util.WaitUtils.pause;
 
@@ -29,7 +26,7 @@ public class RealmRolesTest extends AbstractRolesTest {
     @Page
     private CreateRole createRolePage;
     @Page
-    private RoleDetails roleDetailsPage;
+    private Role rolePage;
     
     private RoleRepresentation testRole;
     
@@ -54,10 +51,10 @@ public class RealmRolesTest extends AbstractRolesTest {
         assertCurrentUrlEquals(realmRolesPage);
         realmRolesPage.table().editRole(roleRep.getName());
 //        assertCurrentUrl(role); // can't do this, role id needed as uri param
-        roleDetailsPage.form().setBasicAttributes(roleRep);
-        roleDetailsPage.form().save();
+        rolePage.form().setBasicAttributes(roleRep);
+        rolePage.form().save();
         assertAlertSuccess();
-        roleDetailsPage.form().setCompositeRoles(roleRep);
+        rolePage.form().setCompositeRoles(roleRep);
     }
     
     public void assertBasicRoleAttributesEqual(RoleRepresentation r1, RoleRepresentation r2) {
@@ -75,12 +72,12 @@ public class RealmRolesTest extends AbstractRolesTest {
         RoleRepresentation foundRole = realmRolesPage.table().findRole(testRole.getName()); // search & get role from table
         assertBasicRoleAttributesEqual(testRole, foundRole);
         realmRolesPage.table().editRole(testRole.getName());
-        foundRole = roleDetailsPage.form().getBasicAttributes();
+        foundRole = rolePage.form().getBasicAttributes();
         assertBasicRoleAttributesEqual(testRole, foundRole);
         
         testRole.setDescription("updated role description");
-        roleDetailsPage.form().setDescription(testRole.getDescription());
-        roleDetailsPage.form().save();
+        rolePage.form().setDescription(testRole.getDescription());
+        rolePage.form().save();
         assertAlertSuccess();
         
         configure().roles();
@@ -99,7 +96,7 @@ public class RealmRolesTest extends AbstractRolesTest {
         // add again
         addRole(testRole);
         // delete from page
-        roleDetailsPage.form().delete();
+        rolePage.form().delete();
         modalDialog.confirmDeletion();
         assertCurrentUrlEquals(realmRolesPage);
     }

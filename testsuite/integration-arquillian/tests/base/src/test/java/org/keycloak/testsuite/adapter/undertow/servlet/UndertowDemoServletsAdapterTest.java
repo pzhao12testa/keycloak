@@ -27,4 +27,10 @@ import org.junit.Ignore;
  */
 @AppServerContainer("auth-server-undertow")
 public class UndertowDemoServletsAdapterTest extends AbstractDemoServletsAdapterTest {
+
+    @Ignore
+    @Override
+    public void testAuthenticatedWithCustomSessionConfig() {
+        // Undertow deployment ignores session cookie settings in web.xml, see org.keycloak.testsuite.arquillian.undertow.SimpleWebXmlParser class
+    }
 }

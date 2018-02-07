@@ -22,7 +22,6 @@
         <property name="jboss.api" value="private"/>
     </properties>
     <resources>
-        <resource-root path="."/>
     </resources>
 
     <dependencies>

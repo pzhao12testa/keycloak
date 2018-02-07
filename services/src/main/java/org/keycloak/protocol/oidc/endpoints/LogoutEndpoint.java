@@ -40,10 +40,8 @@ import org.keycloak.representations.RefreshToken;
 import org.keycloak.services.ErrorPage;
 import org.keycloak.services.ErrorResponseException;
 import org.keycloak.services.managers.AuthenticationManager;
-import org.keycloak.services.managers.UserSessionManager;
 import org.keycloak.services.messages.Messages;
 import org.keycloak.services.resources.Cors;
-import org.keycloak.util.TokenUtil;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -109,7 +107,7 @@ public class LogoutEndpoint {
                 event.event(EventType.LOGOUT);
                 event.detail(Details.REDIRECT_URI, redirect);
                 event.error(Errors.INVALID_REDIRECT_URI);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.INVALID_REDIRECT_URI);
+                return ErrorPage.error(session, Messages.INVALID_REDIRECT_URI);
             }
             redirect = validatedUri;
         }
@@ -122,7 +120,7 @@ public class LogoutEndpoint {
             } catch (OAuthErrorException e) {
                 event.event(EventType.LOGOUT);
                 event.error(Errors.INVALID_TOKEN);
-                return ErrorPage.error(session, null, Response.Status.BAD_REQUEST, Messages.SESSION_NOT_ACTIVE);
+                return ErrorPage.error(session, Messages.SESSION_NOT_ACTIVE);
             }
         }
 
@@ -183,19 +181,9 @@ public class LogoutEndpoint {
         }
         try {
             RefreshToken token = tokenManager.verifyRefreshToken(session, realm, refreshToken, false);
-
-            boolean offline = TokenUtil.TOKEN_TYPE_OFFLINE.equals(token.getType());
-
-            UserSessionModel userSessionModel;
-            if (offline) {
-                UserSessionManager sessionManager = new UserSessionManager(session);
-                userSessionModel = sessionManager.findOfflineUserSession(realm, token.getSessionState());
-            } else {
-                userSessionModel = session.sessions().getUserSession(realm, token.getSessionState());
-            }
-
+            UserSessionModel userSessionModel = session.sessions().getUserSession(realm, token.getSessionState());
             if (userSessionModel != null) {
-                logout(userSessionModel, offline);
+                logout(userSessionModel);
             }
         } catch (OAuthErrorException e) {
             event.error(Errors.INVALID_TOKEN);
@@ -204,8 +192,8 @@ public class LogoutEndpoint {
         return Cors.add(request, Response.noContent()).auth().allowedOrigins(uriInfo, client).allowedMethods("POST").exposedHeaders(Cors.ACCESS_CONTROL_ALLOW_METHODS).build();
     }
 
-    private void logout(UserSessionModel userSession, boolean offline) {
-        AuthenticationManager.backchannelLogout(session, realm, userSession, uriInfo, clientConnection, headers, true, offline);
+    private void logout(UserSessionModel userSession) {
+        AuthenticationManager.backchannelLogout(session, realm, userSession, uriInfo, clientConnection, headers, true);
         event.user(userSession.getUser()).session(userSession).success();
     }
 

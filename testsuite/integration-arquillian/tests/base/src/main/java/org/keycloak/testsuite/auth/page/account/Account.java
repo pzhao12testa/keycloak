@@ -16,7 +16,6 @@
  */
 package org.keycloak.testsuite.auth.page.account;
 
-import org.keycloak.testsuite.util.URLUtils;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 
@@ -78,8 +77,4 @@ public class Account extends AccountManagement {
         return this;
     }
     
-    public boolean isCurrent() {
-        return URLUtils.currentUrlStartWith(toString());     // Sometimes after login the URL ends with /# or similar
-    }
-
 }

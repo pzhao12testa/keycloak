@@ -75,11 +75,9 @@ public class InputServlet extends HttpServlet {
             return;
         }
 
-        resp.setContentType("text/html");
+        resp.setContentType("text/plain");
         PrintWriter pw = resp.getWriter();
-        pw.printf("<html><head><title>%s</title></head><body>", "Input Page");
-        pw.printf("parameter=hello");
-        pw.print("</body></html>");
+        pw.printf("parameter=" + req.getParameter("parameter"));
         pw.flush();
     }
 

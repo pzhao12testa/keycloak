@@ -48,33 +48,26 @@ public class ModalDialog {
     @FindBy(id = "name")
     private WebElement nameInput;
 
-    @FindBy(className = "modal-body")
-    private WebElement message;
-
     public void ok() {
-        waitForModalFadeIn();
+        waitForModalFadeIn(driver);
         okButton.click();
-        waitForModalFadeOut();
+        waitForModalFadeOut(driver);
     }
     
     public void confirmDeletion() {
-        waitForModalFadeIn();
+        waitForModalFadeIn(driver);
         deleteButton.click();
-        waitForModalFadeOut();
+        waitForModalFadeOut(driver);
     }
 
     public void cancel() {
-        waitForModalFadeIn();
+        waitForModalFadeIn(driver);
         cancelButton.click();
-        waitForModalFadeOut();
+        waitForModalFadeOut(driver);
     }
 
     public void setName(String name) {
         nameInput.clear();
         nameInput.sendKeys(name);
-    }
-
-    public WebElement getMessage() {
-        return message;
     }
 }

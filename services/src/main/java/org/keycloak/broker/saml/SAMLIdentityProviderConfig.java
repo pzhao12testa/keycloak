@@ -27,24 +27,6 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
 
     public static final XmlKeyInfoKeyNameTransformer DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER = XmlKeyInfoKeyNameTransformer.NONE;
 
-    public static final String ADD_EXTENSIONS_ELEMENT_WITH_KEY_INFO = "addExtensionsElementWithKeyInfo";
-    public static final String BACKCHANNEL_SUPPORTED = "backchannelSupported";
-    public static final String ENCRYPTION_PUBLIC_KEY = "encryptionPublicKey";
-    public static final String FORCE_AUTHN = "forceAuthn";
-    public static final String NAME_ID_POLICY_FORMAT = "nameIDPolicyFormat";
-    public static final String POST_BINDING_AUTHN_REQUEST = "postBindingAuthnRequest";
-    public static final String POST_BINDING_LOGOUT = "postBindingLogout";
-    public static final String POST_BINDING_RESPONSE = "postBindingResponse";
-    public static final String SIGNATURE_ALGORITHM = "signatureAlgorithm";
-    public static final String SIGNING_CERTIFICATE_KEY = "signingCertificate";
-    public static final String SINGLE_LOGOUT_SERVICE_URL = "singleLogoutServiceUrl";
-    public static final String SINGLE_SIGN_ON_SERVICE_URL = "singleSignOnServiceUrl";
-    public static final String VALIDATE_SIGNATURE = "validateSignature";
-    public static final String WANT_ASSERTIONS_ENCRYPTED = "wantAssertionsEncrypted";
-    public static final String WANT_ASSERTIONS_SIGNED = "wantAssertionsSigned";
-    public static final String WANT_AUTHN_REQUESTS_SIGNED = "wantAuthnRequestsSigned";
-    public static final String XML_SIG_KEY_INFO_KEY_NAME_TRANSFORMER = "xmlSigKeyInfoKeyNameTransformer";
-
     public SAMLIdentityProviderConfig() {
     }
 
@@ -53,35 +35,35 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
     }
 
     public String getSingleSignOnServiceUrl() {
-        return getConfig().get(SINGLE_SIGN_ON_SERVICE_URL);
+        return getConfig().get("singleSignOnServiceUrl");
     }
 
     public void setSingleSignOnServiceUrl(String singleSignOnServiceUrl) {
-        getConfig().put(SINGLE_SIGN_ON_SERVICE_URL, singleSignOnServiceUrl);
+        getConfig().put("singleSignOnServiceUrl", singleSignOnServiceUrl);
     }
 
     public String getSingleLogoutServiceUrl() {
-        return getConfig().get(SINGLE_LOGOUT_SERVICE_URL);
+        return getConfig().get("singleLogoutServiceUrl");
     }
 
     public void setSingleLogoutServiceUrl(String singleLogoutServiceUrl) {
-        getConfig().put(SINGLE_LOGOUT_SERVICE_URL, singleLogoutServiceUrl);
+        getConfig().put("singleLogoutServiceUrl", singleLogoutServiceUrl);
     }
 
     public boolean isValidateSignature() {
-        return Boolean.valueOf(getConfig().get(VALIDATE_SIGNATURE));
+        return Boolean.valueOf(getConfig().get("validateSignature"));
     }
 
     public void setValidateSignature(boolean validateSignature) {
-        getConfig().put(VALIDATE_SIGNATURE, String.valueOf(validateSignature));
+        getConfig().put("validateSignature", String.valueOf(validateSignature));
     }
 
     public boolean isForceAuthn() {
-        return Boolean.valueOf(getConfig().get(FORCE_AUTHN));
+        return Boolean.valueOf(getConfig().get("forceAuthn"));
     }
 
     public void setForceAuthn(boolean forceAuthn) {
-        getConfig().put(FORCE_AUTHN, String.valueOf(forceAuthn));
+        getConfig().put("forceAuthn", String.valueOf(forceAuthn));
     }
 
     /**
@@ -121,98 +103,70 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
         return crt.split(",");
     }
 
+    public static final String SIGNING_CERTIFICATE_KEY = "signingCertificate";
+
     public String getNameIDPolicyFormat() {
-        return getConfig().get(NAME_ID_POLICY_FORMAT);
+        return getConfig().get("nameIDPolicyFormat");
     }
 
     public void setNameIDPolicyFormat(String nameIDPolicyFormat) {
-        getConfig().put(NAME_ID_POLICY_FORMAT, nameIDPolicyFormat);
+        getConfig().put("nameIDPolicyFormat", nameIDPolicyFormat);
     }
 
     public boolean isWantAuthnRequestsSigned() {
-        return Boolean.valueOf(getConfig().get(WANT_AUTHN_REQUESTS_SIGNED));
+        return Boolean.valueOf(getConfig().get("wantAuthnRequestsSigned"));
     }
 
     public void setWantAuthnRequestsSigned(boolean wantAuthnRequestsSigned) {
-        getConfig().put(WANT_AUTHN_REQUESTS_SIGNED, String.valueOf(wantAuthnRequestsSigned));
-    }
-
-    public boolean isWantAssertionsSigned() {
-        return Boolean.valueOf(getConfig().get(WANT_ASSERTIONS_SIGNED));
-    }
-
-    public void setWantAssertionsSigned(boolean wantAssertionsSigned) {
-        getConfig().put(WANT_ASSERTIONS_SIGNED, String.valueOf(wantAssertionsSigned));
-    }
-
-    public boolean isWantAssertionsEncrypted() {
-        return Boolean.valueOf(getConfig().get(WANT_ASSERTIONS_ENCRYPTED));
-    }
-
-    public void setWantAssertionsEncrypted(boolean wantAssertionsEncrypted) {
-        getConfig().put(WANT_ASSERTIONS_ENCRYPTED, String.valueOf(wantAssertionsEncrypted));
+        getConfig().put("wantAuthnRequestsSigned", String.valueOf(wantAuthnRequestsSigned));
     }
 
     public boolean isAddExtensionsElementWithKeyInfo() {
-        return Boolean.valueOf(getConfig().get(ADD_EXTENSIONS_ELEMENT_WITH_KEY_INFO));
+        return Boolean.valueOf(getConfig().get("addExtensionsElementWithKeyInfo"));
     }
 
     public void setAddExtensionsElementWithKeyInfo(boolean addExtensionsElementWithKeyInfo) {
-        getConfig().put(ADD_EXTENSIONS_ELEMENT_WITH_KEY_INFO, String.valueOf(addExtensionsElementWithKeyInfo));
+        getConfig().put("addExtensionsElementWithKeyInfo", String.valueOf(addExtensionsElementWithKeyInfo));
     }
 
     public String getSignatureAlgorithm() {
-        return getConfig().get(SIGNATURE_ALGORITHM);
+        return getConfig().get("signatureAlgorithm");
     }
 
     public void setSignatureAlgorithm(String signatureAlgorithm) {
-        getConfig().put(SIGNATURE_ALGORITHM, signatureAlgorithm);
+        getConfig().put("signatureAlgorithm", signatureAlgorithm);
     }
 
     public String getEncryptionPublicKey() {
-        return getConfig().get(ENCRYPTION_PUBLIC_KEY);
+        return getConfig().get("encryptionPublicKey");
     }
 
     public void setEncryptionPublicKey(String encryptionPublicKey) {
-        getConfig().put(ENCRYPTION_PUBLIC_KEY, encryptionPublicKey);
+        getConfig().put("encryptionPublicKey", encryptionPublicKey);
     }
 
     public boolean isPostBindingAuthnRequest() {
-        return Boolean.valueOf(getConfig().get(POST_BINDING_AUTHN_REQUEST));
+        return Boolean.valueOf(getConfig().get("postBindingAuthnRequest"));
     }
 
     public void setPostBindingAuthnRequest(boolean postBindingAuthnRequest) {
-        getConfig().put(POST_BINDING_AUTHN_REQUEST, String.valueOf(postBindingAuthnRequest));
+        getConfig().put("postBindingAuthnRequest", String.valueOf(postBindingAuthnRequest));
     }
 
     public boolean isPostBindingResponse() {
-        return Boolean.valueOf(getConfig().get(POST_BINDING_RESPONSE));
+        return Boolean.valueOf(getConfig().get("postBindingResponse"));
     }
 
     public void setPostBindingResponse(boolean postBindingResponse) {
-        getConfig().put(POST_BINDING_RESPONSE, String.valueOf(postBindingResponse));
-    }
-
-    public boolean isPostBindingLogout() {
-        String postBindingLogout = getConfig().get(POST_BINDING_LOGOUT);
-        if (postBindingLogout == null) {
-            // To maintain unchanged behavior when adding this field, we set the inital value to equal that
-            // of the binding for the response:
-            return isPostBindingResponse();
-        }
-        return Boolean.valueOf(postBindingLogout);
-    }
-
-    public void setPostBindingLogout(boolean postBindingLogout) {
-        getConfig().put(POST_BINDING_LOGOUT, String.valueOf(postBindingLogout));
+        getConfig().put("postBindingResponse", String.valueOf(postBindingResponse));
     }
 
     public boolean isBackchannelSupported() {
-        return Boolean.valueOf(getConfig().get(BACKCHANNEL_SUPPORTED));
+        return Boolean.valueOf(getConfig().get("backchannelSupported"));
     }
 
     public void setBackchannelSupported(boolean backchannel) {
-        getConfig().put(BACKCHANNEL_SUPPORTED, String.valueOf(backchannel));
+        getConfig().put("backchannelSupported", String.valueOf(backchannel));
     }
 
     /**
@@ -220,11 +174,11 @@ public class SAMLIdentityProviderConfig extends IdentityProviderModel {
      * @return Configured ransformer of {@link #DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER} if not set.
      */
     public XmlKeyInfoKeyNameTransformer getXmlSigKeyInfoKeyNameTransformer() {
-        return XmlKeyInfoKeyNameTransformer.from(getConfig().get(XML_SIG_KEY_INFO_KEY_NAME_TRANSFORMER), DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER);
+        return XmlKeyInfoKeyNameTransformer.from(getConfig().get("xmlSigKeyInfoKeyNameTransformer"), DEFAULT_XML_KEY_INFO_KEY_NAME_TRANSFORMER);
     }
 
     public void setXmlSigKeyInfoKeyNameTransformer(XmlKeyInfoKeyNameTransformer xmlSigKeyInfoKeyNameTransformer) {
-        getConfig().put(XML_SIG_KEY_INFO_KEY_NAME_TRANSFORMER,
+        getConfig().put("xmlSigKeyInfoKeyNameTransformer",
           xmlSigKeyInfoKeyNameTransformer == null
             ? null
             : xmlSigKeyInfoKeyNameTransformer.name());

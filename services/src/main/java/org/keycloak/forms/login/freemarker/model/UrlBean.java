@@ -33,7 +33,7 @@ public class UrlBean {
     private String realm;
 
     public UrlBean(RealmModel realm, Theme theme, URI baseURI, URI actionUri) {
-        this.realm = realm != null ? realm.getName() : null;
+        this.realm = realm.getName();
         this.theme = theme;
         this.baseURI = baseURI;
         this.actionuri = actionUri;
@@ -48,10 +48,6 @@ public class UrlBean {
 
     public String getLoginUrl() {
         return Urls.realmLoginPage(baseURI, realm).toString();
-    }
-
-    public String getLoginRestartFlowUrl() {
-        return Urls.realmLoginRestartPage(baseURI, realm).toString();
     }
 
     public String getRegistrationAction() {
@@ -83,6 +79,10 @@ public class UrlBean {
 
     public String getLoginUsernameReminderUrl() {
         return Urls.loginUsernameReminder(baseURI, realm).toString();
+    }
+
+    public String getLoginEmailVerificationUrl() {
+        return Urls.loginActionEmailVerification(baseURI, realm).toString();
     }
 
     public String getFirstBrokerLoginUrl() {

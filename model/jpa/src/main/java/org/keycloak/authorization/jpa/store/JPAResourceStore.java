@@ -17,24 +17,21 @@
  */
 package org.keycloak.authorization.jpa.store;
 
-import org.keycloak.authorization.AuthorizationProvider;
 import org.keycloak.authorization.jpa.entities.ResourceEntity;
+import org.keycloak.authorization.jpa.entities.ResourceServerEntity;
 import org.keycloak.authorization.model.Resource;
 import org.keycloak.authorization.model.ResourceServer;
 import org.keycloak.authorization.store.ResourceStore;
 import org.keycloak.models.utils.KeycloakModelUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.FlushModeType;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -44,35 +41,38 @@ import java.util.Map;
 public class JPAResourceStore implements ResourceStore {
 
     private final EntityManager entityManager;
-    private final AuthorizationProvider provider;
 
-    public JPAResourceStore(EntityManager entityManager, AuthorizationProvider provider) {
+    public JPAResourceStore(EntityManager entityManager) {
         this.entityManager = entityManager;
-        this.provider = provider;
     }
 
     @Override
     public Resource create(String name, ResourceServer resourceServer, String owner) {
+        if (!(resourceServer instanceof ResourceServerEntity)) {
+            throw new RuntimeException("Unexpected type [" + resourceServer.getClass() + "].");
+        }
+
         ResourceEntity entity = new ResourceEntity();
 
         entity.setId(KeycloakModelUtils.generateId());
         entity.setName(name);
-        entity.setResourceServer(ResourceServerAdapter.toEntity(entityManager, resourceServer));
+        entity.setResourceServer((ResourceServerEntity) resourceServer);
         entity.setOwner(owner);
 
         this.entityManager.persist(entity);
-        this.entityManager.flush();
 
-        return new ResourceAdapter(entity, entityManager, provider.getStoreFactory());
+        return entity;
     }
 
     @Override
     public void delete(String id) {
-        ResourceEntity resource = entityManager.getReference(ResourceEntity.class, id);
-        if (resource == null) return;
+        Resource resource = entityManager.find(ResourceEntity.class, id);
 
         resource.getScopes().clear();
-        this.entityManager.remove(resource);
+
+        if (resource != null) {
+            this.entityManager.remove(resource);
+        }
     }
 
     @Override
@@ -81,72 +81,52 @@ public class JPAResourceStore implements ResourceStore {
             return null;
         }
 
-        ResourceEntity entity = entityManager.find(ResourceEntity.class, id);
-        if (entity == null) return null;
-        return new ResourceAdapter(entity, entityManager, provider.getStoreFactory());
+        if (resourceServerId == null) {
+            return entityManager.find(ResourceEntity.class, id);
+        }
+
+        Query query = entityManager.createQuery("from ResourceEntity where resourceServer.id = :serverId and id = :id");
+
+        query.setParameter("serverId", resourceServerId);
+        query.setParameter("id", id);
+
+        return entityManager.find(ResourceEntity.class, id);
     }
 
     @Override
     public List<Resource> findByOwner(String ownerId, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByOwner", String.class);
+        Query query = entityManager.createQuery("from ResourceEntity where resourceServer.id = :serverId and owner = :ownerId");
 
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("owner", ownerId);
+        query.setParameter("ownerId", ownerId);
         query.setParameter("serverId", resourceServerId);
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 
     @Override
     public List<Resource> findByUri(String uri, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByUri", String.class);
+        Query query = entityManager.createQuery("from ResourceEntity where resourceServer.id = :serverId and uri = :uri");
 
-        query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("uri", uri);
         query.setParameter("serverId", resourceServerId);
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 
     @Override
-    public List<Resource> findByResourceServer(String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByServerId", String.class);
+    public List findByResourceServer(String resourceServerId) {
+        Query query = entityManager.createQuery("from ResourceEntity where resourceServer.id = :serverId");
 
         query.setParameter("serverId", resourceServerId);
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 
     @Override
-    public List<Resource> findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
+    public List findByResourceServer(Map<String, String[]> attributes, String resourceServerId, int firstResult, int maxResult) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<ResourceEntity> querybuilder = builder.createQuery(ResourceEntity.class);
         Root<ResourceEntity> root = querybuilder.from(ResourceEntity.class);
-        querybuilder.select(root.get("id"));
         List<Predicate> predicates = new ArrayList();
 
         predicates.add(builder.equal(root.get("resourceServer").get("id"), resourceServerId));
@@ -172,68 +152,42 @@ public class JPAResourceStore implements ResourceStore {
             query.setMaxResults(maxResult);
         }
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 
     @Override
-    public List<Resource> findByScope(List<String> scopes, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByScope", String.class);
+    public List<Resource> findByScope(List<String> id, String resourceServerId) {
+        Query query = entityManager.createQuery("select r from ResourceEntity r inner join r.scopes s where r.resourceServer.id = :serverId and (s.resourceServer.id = :serverId and s.id in (:scopeIds))");
 
-        query.setFlushMode(FlushModeType.COMMIT);
-        query.setParameter("scopeIds", scopes);
+        query.setParameter("scopeIds", id);
         query.setParameter("serverId", resourceServerId);
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 
     @Override
     public Resource findByName(String name, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByName", String.class);
+        Query query = entityManager.createQuery("from ResourceEntity where resourceServer.id = :serverId and name = :name");
 
-        query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("serverId", resourceServerId);
         query.setParameter("name", name);
 
-        try {
-            String id = query.getSingleResult();
-            return provider.getStoreFactory().getResourceStore().findById(id, resourceServerId);
-        } catch (NoResultException ex) {
-            return null;
+        List<Resource> result = query.getResultList();
+
+        if (!result.isEmpty()) {
+            return result.get(0);
         }
+
+        return null;
     }
 
     @Override
     public List<Resource> findByType(String type, String resourceServerId) {
-        TypedQuery<String> query = entityManager.createNamedQuery("findResourceIdByType", String.class);
+        Query query = entityManager.createQuery("from ResourceEntity r where r.resourceServer.id = :serverId and type = :type");
 
-        query.setFlushMode(FlushModeType.COMMIT);
         query.setParameter("type", type);
         query.setParameter("serverId", resourceServerId);
 
-        List<String> result = query.getResultList();
-        List<Resource> list = new LinkedList<>();
-        ResourceStore resourceStore = provider.getStoreFactory().getResourceStore();
-
-        for (String id : result) {
-            list.add(resourceStore.findById(id, resourceServerId));
-        }
-
-        return list;
+        return query.getResultList();
     }
 }

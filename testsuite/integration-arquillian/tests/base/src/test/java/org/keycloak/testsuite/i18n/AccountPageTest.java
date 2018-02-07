@@ -23,7 +23,6 @@ import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.testsuite.pages.AccountUpdateProfilePage;
 import org.keycloak.testsuite.pages.LoginPage;
-import org.keycloak.testsuite.ProfileAssume;
 
 import java.util.List;
 
@@ -57,8 +56,6 @@ public class AccountPageTest extends AbstractI18NTest {
 
     @Test
     public void testLocalizedReferrerLinkContent() {
-        ProfileAssume.assumeCommunity();
-        
         RealmResource testRealm = testRealm();
         List<ClientRepresentation> foundClients = testRealm.clients().findByClientId("var-named-test-app");
         if (foundClients.isEmpty()) {

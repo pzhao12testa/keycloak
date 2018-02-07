@@ -38,7 +38,6 @@ public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFa
 
     private static final Logger log = Logger.getLogger(InfinispanCacheRealmProviderFactory.class);
     public static final String REALM_CLEAR_CACHE_EVENTS = "REALM_CLEAR_CACHE_EVENTS";
-    public static final String REALM_INVALIDATION_EVENTS = "REALM_INVALIDATION_EVENTS";
 
     protected volatile RealmCacheManager realmCache;
 
@@ -57,11 +56,12 @@ public class InfinispanCacheRealmProviderFactory implements CacheRealmProviderFa
                     realmCache = new RealmCacheManager(cache, revisions);
 
                     ClusterProvider cluster = session.getProvider(ClusterProvider.class);
-                    cluster.registerListener(REALM_INVALIDATION_EVENTS, (ClusterEvent event) -> {
+                    cluster.registerListener(ClusterProvider.ALL, (ClusterEvent event) -> {
 
-                        InvalidationEvent invalidationEvent = (InvalidationEvent) event;
-                        realmCache.invalidationEventReceived(invalidationEvent);
-
+                        if (event instanceof InvalidationEvent) {
+                            InvalidationEvent invalidationEvent = (InvalidationEvent) event;
+                            realmCache.invalidationEventReceived(invalidationEvent);
+                        }
                     });
 
                     cluster.registerListener(REALM_CLEAR_CACHE_EVENTS, (ClusterEvent event) -> {

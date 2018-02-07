@@ -49,13 +49,12 @@ public abstract class AbstractUserAttributeMapperTest extends AbstractBaseBroker
 
         RealmResource realm = adminClient.realm(bc.consumerRealmName());
         final IdentityProviderRepresentation idp = bc.setUpIdentityProvider(suiteContext);
-        Response resp = realm.identityProviders().create(idp);
-        resp.close();
+        realm.identityProviders().create(idp);
 
         IdentityProviderResource idpResource = realm.identityProviders().get(idp.getAlias());
         for (IdentityProviderMapperRepresentation mapper : createIdentityProviderMappers()) {
             mapper.setIdentityProviderAlias(bc.getIDPAlias());
-            resp = idpResource.addMapper(mapper);
+            Response resp = idpResource.addMapper(mapper);
             resp.close();
         }
     }
@@ -68,8 +67,7 @@ public abstract class AbstractUserAttributeMapperTest extends AbstractBaseBroker
             for (ClientRepresentation client : clients) {
                 log.debug("adding client " + client.getName() + " to realm " + bc.providerRealmName());
 
-                Response resp = providerRealm.clients().create(client);
-                resp.close();
+                providerRealm.clients().create(client);
             }
         }
 
@@ -79,8 +77,7 @@ public abstract class AbstractUserAttributeMapperTest extends AbstractBaseBroker
             for (ClientRepresentation client : clients) {
                 log.debug("adding client " + client.getName() + " to realm " + bc.consumerRealmName());
 
-                Response resp = consumerRealm.clients().create(client);
-                resp.close();
+                consumerRealm.clients().create(client);
             }
         }
     }
@@ -233,26 +230,6 @@ public abstract class AbstractUserAttributeMapperTest extends AbstractBaseBroker
           .build(),
           ImmutableMap.<String, List<String>>builder()
           .put(ATTRIBUTE_TO_MAP_NAME, ImmutableList.<String>builder().add("second value").add("second value 2").build())
-          .build()
-        );
-    }
-
-    @Test
-    public void testAddBasicMappingMultipleValues() {
-        testValueMapping(ImmutableMap.<String, List<String>>builder()
-          .build(),
-          ImmutableMap.<String, List<String>>builder()
-          .put(ATTRIBUTE_TO_MAP_NAME, ImmutableList.<String>builder().add("second value").add("second value 2").build())
-          .build()
-        );
-    }
-
-    @Test
-    public void testDeleteBasicMappingMultipleValues() {
-        testValueMapping(ImmutableMap.<String, List<String>>builder()
-          .put(ATTRIBUTE_TO_MAP_NAME, ImmutableList.<String>builder().add("second value").add("second value 2").build())
-          .build(),
-          ImmutableMap.<String, List<String>>builder()
           .build()
         );
     }

@@ -43,7 +43,7 @@ public class SysoutEventListenerProviderFactory implements EventListenerProvider
 
     @Override
     public void init(Config.Scope config) {
-        String[] excludes = config.getArray("exclude-events");
+        String[] excludes = config.getArray("excludes");
         if (excludes != null) {
             excludedEvents = new HashSet<>();
             for (String e : excludes) {

@@ -28,7 +28,7 @@ public class ClientAuthenticatorSpi implements Spi {
 
     @Override
     public boolean isInternal() {
-        return true;
+        return false;
     }
 
     @Override

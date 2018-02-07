@@ -53,6 +53,7 @@ public final class StreamUtil {
      * @param charset Charset used to decode the input stream
      * @return String representation of the input stream contents decoded using given charset
      * @throws IOException
+     * @deprecated Use {@link #readString(java.io.InputStream, java.nio.charset.Charset)} variant.
      */
     public static String readString(InputStream in, Charset charset) throws IOException
     {

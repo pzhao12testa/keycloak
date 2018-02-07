@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.keycloak.testsuite.arquillian.undertow;
 
 import java.io.IOException;
@@ -82,6 +83,7 @@ class UndertowDeployerHelper {
         }
     }
 
+
     private ResourceManager getResourceManager(final String appServerRoot, final WebArchive archive) throws IOException {
         return new ResourceManager() {
 
@@ -137,6 +139,7 @@ class UndertowDeployerHelper {
                 throw UndertowMessages.MESSAGES.resourceChangeListenerNotSupported();
             }
 
+
             @Override
             public void close() throws IOException {
                 // TODO: Should close open streams?
@@ -144,6 +147,7 @@ class UndertowDeployerHelper {
 
         };
     }
+
 
     private Document loadXML(InputStream is) {
         try {
@@ -155,6 +159,7 @@ class UndertowDeployerHelper {
         }
     }
 
+
     private void addAnnotatedServlets(DeploymentInfo di, Archive<?> archive) {
         Map<ArchivePath, Node> classNodes = archive.getContent((ArchivePath path) -> {
 
@@ -165,26 +170,25 @@ class UndertowDeployerHelper {
 
         for (Map.Entry<ArchivePath, Node> entry : classNodes.entrySet()) {
             Node n = entry.getValue();
-            if (n.getAsset() instanceof ClassAsset) {
-                ClassAsset classAsset = (ClassAsset) n.getAsset();
-                Class<?> clazz = classAsset.getSource();
+            ClassAsset classAsset = (ClassAsset) n.getAsset();
+            Class<?> clazz = classAsset.getSource();
 
-                WebServlet annotation = clazz.getAnnotation(WebServlet.class);
-                if (annotation != null) {
-                    ServletInfo undertowServlet = new ServletInfo(clazz.getSimpleName(), (Class<? extends Servlet>) clazz);
+            WebServlet annotation = clazz.getAnnotation(WebServlet.class);
+            if (annotation != null) {
+                ServletInfo undertowServlet = new ServletInfo(clazz.getSimpleName(), (Class<? extends Servlet>) clazz);
 
-                    String[] mappings = annotation.value();
-                    if (mappings != null) {
-                        for (String urlPattern : mappings) {
-                            undertowServlet.addMapping(urlPattern);
-                        }
+                String[] mappings = annotation.value();
+                if (mappings != null) {
+                    for (String urlPattern : mappings) {
+                        undertowServlet.addMapping(urlPattern);
                     }
-
-                    di.addServlet(undertowServlet);
                 }
+
+                di.addServlet(undertowServlet);
             }
         }
 
     }
+
 
 }

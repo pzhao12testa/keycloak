@@ -28,7 +28,7 @@ public class PasswordPolicySpi implements Spi {
 
     @Override
     public boolean isInternal() {
-        return true;
+        return false;
     }
 
     @Override

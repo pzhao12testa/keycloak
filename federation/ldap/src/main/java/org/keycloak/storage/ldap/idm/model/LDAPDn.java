@@ -50,11 +50,7 @@ public class LDAPDn {
         String[] rdns = dnString.split("(?<!\\\\),");
         for (String entryStr : rdns) {
             String[] rdn = entryStr.split("(?<!\\\\)=");
-            if (rdn.length >1) {
-                dn.addLast(rdn[0].trim(), rdn[1].trim());
-            } else {
-                dn.addLast(rdn[0].trim(), "");
-            }
+            dn.addLast(rdn[0].trim(), rdn[1].trim());
         }
 
         return dn;

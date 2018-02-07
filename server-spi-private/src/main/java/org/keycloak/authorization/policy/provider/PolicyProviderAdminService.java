@@ -18,11 +18,16 @@
 
 package org.keycloak.authorization.policy.provider;
 
-import org.keycloak.representations.idm.authorization.AbstractPolicyRepresentation;
+import org.keycloak.authorization.model.Policy;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Igor</a>
  */
-public interface PolicyProviderAdminService<R extends AbstractPolicyRepresentation> {
+public interface PolicyProviderAdminService {
 
+    void onCreate(Policy policy);
+
+    void onUpdate(Policy policy);
+
+    void onRemove(Policy policy);
 }

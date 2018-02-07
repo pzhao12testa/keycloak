@@ -54,8 +54,6 @@ public class Templates {
                 return "login-update-profile.ftl";
             case CODE:
                 return "code.ftl";
-            case LOGIN_PAGE_EXPIRED:
-                return "login-page-expired.ftl";
             default:
                 throw new IllegalArgumentException();
         }

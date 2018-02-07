@@ -36,37 +36,13 @@ public interface UserStorageProviderResource {
      * Action can be "triggerFullSync" or "triggerChangedUsersSync"
      *
      *
-     * @param componentId
      * @param action
      * @return
      */
     @POST
     @Path("{componentId}/sync")
     @Produces(MediaType.APPLICATION_JSON)
-    SynchronizationResultRepresentation syncUsers(@PathParam("componentId") String componentId, @QueryParam("action") String action);
-
-    /**
-     * Remove imported users
-     *
-     *
-     * @param componentId
-     * @return
-     */
-    @POST
-    @Path("{componentId}/remove-imported-users")
-    @Produces(MediaType.APPLICATION_JSON)
-    void removeImportedUsers(@PathParam("componentId") String componentId);
-
-    /**
-     * Unlink imported users from a storage provider
-     *
-     * @param componentId
-     * @return
-     */
-    @POST
-    @Path("{componentId}/unlink-users")
-    @Produces(MediaType.APPLICATION_JSON)
-    void unlink(@PathParam("componentId") String componentId);
+    SynchronizationResultRepresentation syncUsers(@QueryParam("action") String action);
 
     /**
      * REST invocation for initiating sync for an ldap mapper.  This method may be moved in the future.  Right now

@@ -17,6 +17,7 @@
 package org.keycloak.testsuite.adapter.example.authorization;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.keycloak.testsuite.adapter.example.authorization.AbstractServletAuthzAdapterTest;
 import org.keycloak.testsuite.arquillian.annotation.AppServerContainer;
 
 /**
@@ -26,6 +27,6 @@ import org.keycloak.testsuite.arquillian.annotation.AppServerContainer;
 @RunAsClient
 @AppServerContainer("app-server-eap")
 //@AdapterLibsLocationProperty("adapter.libs.wildfly")
-public class EAPServletAuthzAdapterTest extends AbstractServletAuthzFunctionalAdapterTest {
+public class EAPServletAuthzAdapterTest extends AbstractServletAuthzAdapterTest {
 
 }

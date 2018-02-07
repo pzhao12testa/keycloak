@@ -59,7 +59,7 @@ public class AddRealmCodeSecret implements CustomSqlChange {
 
                     UpdateStatement statement = new UpdateStatement(null, null, correctedTableName)
                             .addNewColumnValue("CODE_SECRET", KeycloakModelUtils.generateCodeSecret())
-                            .setWhereClause("ID=?").addWhereParameters(id);
+                            .setWhereClause("ID='" + id + "'");
                     statements.add(statement);
 
                     if (!resultSet.isFirst()) {
